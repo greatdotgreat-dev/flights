@@ -1,0 +1,109 @@
+@extends('layouts.admin')
+
+@section('title', 'Admin Dashboard')
+
+@section('content')
+    <div class="row mb-4">
+        {{-- Quick Stats --}}
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h6 class="text-muted">Total Bookings</h6>
+                    {{-- show total bookings  --}}
+                    <h3 class="fw-bold">{{ $totalBookings }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h6 class="text-muted">Total Agents</h6>
+                    <h3 class="fw-bold">{{ $totalAgents }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h6 class="text-muted">Today&apos;s Bookings</h6>
+                    <h3 class="fw-bold">{{ $todaysBookings }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Shortcuts --}}
+    <div class="mb-4" id="create-booking">
+        <a href="{{ route('admin.agents.index') }}" class="btn btn-outline-secondary me-2">
+    View All Agents
+</a>
+        <a href="#reports" class="btn btn-outline-info">
+            Reports
+        </a>
+    </div>
+
+    {{-- Latest Bookings Table --}}
+    <div class="card shadow-sm mb-4" id="bookings-table">
+        <div class="card-header">
+            <h5 class="mb-0">Latest Bookings</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table id="bookingsTable" class="table table-striped table-bordered align-middle">
+                    <thead class="table-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>Agent</th>
+                        <th>Customer Email</th>
+                        <th>Flight Type</th>
+                        <th>Amount Charged</th>
+                        <th>Status</th>
+                        <th>Created</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {{-- @foreach($latestBookings as $booking) --}}
+                        {{-- <tr> --}}
+                            {{-- <td>{{ $booking->id }}</td> --}}
+                            {{-- <td>{{ $booking->agent_custom_id ?? optional($booking->user)->agent_custom_id }}</td> --}}
+                            {{-- <td>{{ $booking->customer_email }}</td> --}}
+                            {{-- <td>{{ $booking->flight_type }}</td> --}}
+                            {{-- <td>{{ $booking->currency }} {{ number_format($booking->amount_charged, 2) }}</td> --}}
+                            {{-- <td> --}}
+                                {{-- <span class="badge bg-{{ $booking->status === 'charged' ? 'success' : 'warning' }}"> --}}
+                                    {{-- {{ ucfirst($booking->status) }} --}}
+                                {{-- </span> --}}
+                            {{-- </td> --}}
+                            {{-- <td>{{ $booking->created_at->format('Y-m-d H:i') }}</td> --}}
+                        {{-- </tr>  --}}
+                    {{-- @endforeach --}}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    {{-- Dummy Reports Section --}}
+    <div class="card shadow-sm" id="reports">
+        <div class="card-header">
+            <h5 class="mb-0">Reports (Dummy Data)</h5>
+        </div>
+        <div class="card-body">
+            <p class="text-muted mb-0">
+                Here you can later show charts and analytics (bookings by day, revenue by agent, etc.).
+            </p>
+        </div>
+    </div>
+@endsection
+
+@push('scripts')
+<script>
+    $(function () {
+        $('#bookingsTable').DataTable({
+            responsive: true,
+            pageLength: 10,
+            order: [[0, 'desc']],
+        });
+    });
+</script>
+@endpush
