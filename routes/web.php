@@ -1,54 +1,50 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Admin\AdminDashboardController;
-use App\Http\Controllers\Admin\AdminAuthController;
-use App\Http\Controllers\Admin\AdminLoginController;
+use App\Http\Controllers\Admin\ActivityLogController;
 use App\Http\Controllers\Admin\AdminAgentsController;
-use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\AdminAuthController;
 use App\Http\Controllers\Admin\AdminBookingsController;
-use App\Http\Controllers\Admin\SettingsController;
-use App\Http\Controllers\Agent\AgentAuthController;
-use App\Http\Controllers\Agent\DashboardController;
-use App\Http\Controllers\BookingController;
-use App\Http\Controllers\Charge\ChargeController; 
-use Illuminate\Http\Request;
-use App\Http\Controllers\Auth\AgentLoginController;
-use App\Http\Controllers\Auth\ChargeLoginController;
-use App\Http\Controllers\Charge\ChargingDashboardController; 
-use App\Http\Controllers\Charge\ChargingController;
-use App\Http\Controllers\AuthConsentController;
+use App\Http\Controllers\Admin\AdminDashboardController;
+use App\Http\Controllers\Admin\AdminLoginController;
 use App\Http\Controllers\Admin\AdminNotifyController;
+use App\Http\Controllers\Admin\SettingsController;
+use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Agent\Auth\AgentAuthController;
+use App\Http\Controllers\Agent\DashboardController;
+use App\Http\Controllers\AgentBookingController;
+use App\Http\Controllers\Auth\ChargeLoginController;
+use App\Http\Controllers\AuthConsentController;
+use App\Http\Controllers\BookingController;
+use App\Http\Controllers\Charge\ChargeController;
+use App\Http\Controllers\Charge\ChargingDashboardController;
+use App\Http\Controllers\Charge\ChargeBookingStatusController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\Support\CsLoginController;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 
-
-// charge booking controller 
-use App\Http\Controllers\ChargeBookingController;
-/*
-|--------------------------------------------------------------------------
-| Web Routes - Laravel 11 Compatible
-|--------------------------------------------------------------------------
-*/
-
-// email consent routes 
-        // Customer access route (Signed for security)
+// email consent routes
+// Customer access route (Signed for security)
 Route::get('/consent/{id}', [AuthConsentController::class, 'customerConsentView'])
     ->name('customer.consent.view')
     ->middleware('signed'); // This prevents tampering with the ID
 
+// agent auth routes
+// Route::get('/', [AgentAuthController::class, 'showLoginForm'])->name('agent.login');
+Route::get('/agent/login', [AgentAuthController::class, 'showLogin'])->name('agent.login');
+Route::post('/agent/login', [AgentAuthController::class, 'login']);
+Route::post('/agent/logout', [AgentAuthController::class, 'logout'])->name('agent.logout');
 
-
-// agent auth routes 
-Route::get('/', [AgentLoginController::class, 'showLoginForm'])->name('agent.login');
-Route::get('/agent/login', [AgentLoginController::class, 'showLoginForm'])->name('agent.login');
-Route::post('/agent/login', [AgentLoginController::class, 'login']);
-Route::post('/agent/logout', [AgentLoginController::class, 'logout'])->name('agent.logout');
-
-// admin auth routes 
+// admin auth routes
 Route::get('/Admin/login', [AdminLoginController::class, 'showLoginForm'])->name('admin.login');
 Route::post('/Admin/login', [AdminLoginController::class, 'login']);
-Route::post('/agent/logout', [AdminLoginController::class, 'logout'])->name('admin.logout');
+Route::post('/admin/logout', [AdminLoginController::class, 'logout'])->name('admin.logout');
+
+// Customer supporrt auth routes
+Route::get('/support/login', [CsLoginController::class, 'showLoginForm'])->name('support.login');
+Route::post('/support/login', [CsLoginController::class, 'login']);
+Route::post('/support/logout', [CsLoginController::class, 'logout'])->name('support.logout');
 
 // charge auth routes
 Route::get('/charge/login', [ChargeLoginController::class, 'showLoginForm'])->name('charge.login');
@@ -65,32 +61,32 @@ Route::middleware(['auth', 'role:charge'])->prefix('charge')->name('charge.')->g
     Route::post('/assignments/{assignment}/reject', [ChargeController::class, 'reject'])->name('assignments.reject');
     Route::get('/bookings/{booking}', [BookingController::class, 'chargeShow'])->name('bookings.show');
 
-        // Page to view and edit the authorization email
+    // Page to view and edit the authorization email
     Route::get('/booking/{id}/authorize-edit', [AuthConsentController::class, 'edit'])
         ->name('authorize.edit');
-    
+
     // Preview page after editing
     Route::post('/booking/{id}/authorize-preview', [AuthConsentController::class, 'preview'])
         ->name('authorize.preview');
-    
+
     // Final action to send the email
     Route::post('/booking/{id}/authorize-send', [AuthConsentController::class, 'send'])
         ->name('authorize.send');
-
+    
+    Route::post('/bookings/{id}/update-status', [ChargeBookingStatusController::class, 'update'])
+        ->name('bookings.update-status');
 
 });
 
-
 // AGENT DASHBOARD ROUTES ONLY (POST-LOGIN)
 Route::middleware(['auth', 'role:agent'])->prefix('agent')->name('agent.')->group(function () {
+
+    Route::get('/dashboard', [DashboardController::class, 'Index'])->name('dashboard');
+
     // Route::get('/dashboard', [BookingController::class, 'agentIndex'])->name('dashboard');
-
-    Route::get('/dashboard', [DashboardController::class, 'Index'])->name('dashboard'); 
-
-    // Route::get('/dashboard', [BookingController::class, 'agentIndex'])->name('dashboard'); 
     Route::get('/bookings', [BookingController::class, 'agentIndex'])->name('bookings.index');
-    Route::get('/bookings/create', [BookingController::class, 'agentCreate'])->name('bookings.create');
-    Route::post('/bookings', [BookingController::class, 'agentStore'])->name('bookings.store');
+    Route::get('/bookings/create', [AgentBookingController::class, 'create'])->name('bookings.create');
+    Route::post('/bookings', [AgentBookingController::class, 'store'])->name('bookings.store');
     Route::get('/bookings/{booking}', [BookingController::class, 'agentShow'])->name('bookings.show');
     Route::get('//{booking}/edit', [BookingController::class, 'agentEdit'])->name('bookings.edit');
     Route::get('/bookings/{booking}/charge', [BookingController::class, 'chargeByAgent'])->name('bookings.charge');
@@ -98,7 +94,18 @@ Route::middleware(['auth', 'role:agent'])->prefix('agent')->name('agent.')->grou
 });
 
 // ADMIN ROUTES
+Route::middleware(['auth', 'role:admin'])
+    ->prefix('admin')
+    ->name('admin.')
+    ->group(function () {
+        Route::get('/activity-logs', [ActivityLogController::class, 'index'])
+            ->name('activity.logs');
+
+        Route::get('/activity-logs/latest', [ActivityLogController::class, 'latest'])
+            ->name('activity.logs.latest');
+    });
 Route::middleware(['auth', 'role:admin|manager'])->prefix('admin')->name('admin.')->group(function () {
+   
     Route::get('/dashboard', [\App\Http\Controllers\Admin\AdminDashboardController::class, 'index'])->name('dashboard');
     Route::get('/agents-list', [\App\Http\Controllers\Admin\AdminAgentsController::class, 'index'])->name('agents.index');
     Route::get('/bookings/all', [\App\Http\Controllers\Admin\AdminBookingsController::class, 'all'])->name('bookings.all');
@@ -107,11 +114,20 @@ Route::middleware(['auth', 'role:admin|manager'])->prefix('admin')->name('admin.
     Route::get('/bookings/{id}/edit', [\App\Http\Controllers\Admin\AdminBookingsController::class, 'edit'])->name('bookings.edit');
     Route::put('/bookings/{id}', [\App\Http\Controllers\Admin\AdminBookingsController::class, 'update'])->name('bookings.update');
     Route::delete('/bookings/{id}', [\App\Http\Controllers\Admin\AdminBookingsController::class, 'destroy'])->name('bookings.destroy');
-    // Settings...
 });
 
+// customer support ROUTES
+Route::middleware(['auth', 'role:support'])->prefix('support')->name('support.')->group(function () {
+    Route::get('/dashboard', [\App\Http\Controllers\Support\SupportDashboardcontroller::class, 'index'])->name('dashboard');
+    Route::get('/agents-list', [\App\Http\Controllers\Support\SupportAgentsController::class, 'index'])->name('agents.index');
+    Route::get('/bookings/all', [\App\Http\Controllers\Support\SupportBookingsController::class, 'all'])->name('bookings.all');
+    Route::get('/bookings', [\App\Http\Controllers\Support\SupportBookingsController::class, 'index'])->name('bookings.index');
+    Route::get('/bookings/{id}', [\App\Http\Controllers\Support\SupportBookingsController::class, 'show'])->name('bookings.show');
+    Route::get('/bookings/{id}/edit', [\App\Http\Controllers\Support\SupportBookingsController::class, 'edit'])->name('bookings.edit');
+    Route::put('/bookings/{id}', [\App\Http\Controllers\Support\SupportBookingsController::class, 'update'])->name('bookings.update');
+    Route::put('/bookings/{id}/support-status', [\App\Http\Controllers\Support\SupportBookingsController::class, 'updateStatus'])->name('bookings.update-status');
 
-
+});
 // MIS PANEL ROUTES - Role: mis
 Route::middleware(['auth', 'role:mis'])->prefix('mis')->name('mis.')->group(function () {
     Route::get('/bookings', [AdminBookingsController::class, 'index'])->name('bookings.index');
@@ -119,18 +135,16 @@ Route::middleware(['auth', 'role:mis'])->prefix('mis')->name('mis.')->group(func
     Route::put('/bookings/{id}', [AdminBookingsController::class, 'update'])->name('bookings.update');
 });
 
-
-
 // GENERAL LOGOUT
 Route::middleware('auth')->group(function () {
     Route::post('/logout', function (Request $request) {
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
+
         return redirect('/');
     })->name('logout');
 });
-
 
 // Admin Authentication Routes (No middleware needed here)
 Route::prefix('admin')->name('admin.')->group(function () {
@@ -141,17 +155,17 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
 // Protected Admin Routes (Both Admin and Manager can access)
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin|manager'])->group(function () {
-    
+
     // Dashboard
     Route::get('/dashboard', [AdminDashboardController::class, 'index'])
-    ->name('dashboard');
-    
-    // admin can change the status of the agent by clicking on the button in the agents list page, 
+        ->name('dashboard');
+
+    // admin can change the status of the agent by clicking on the button in the agents list page,
     Route::post('/agents/{agent}/toggle-status', [AdminAgentsController::class, 'toggleStatus'])
-    ->name('admin.agents.toggleStatus');
+        ->name('admin.agents.toggleStatus');
     Route::post('/agents/{agent}/toggle-status', [AdminAgentsController::class, 'toggleStatus'])->name('agents.toggleStatus');
-    
-// User Management Routes (Only Admin can access these)
+
+    // User Management Routes (Only Admin can access these)
     Route::prefix('users')->name('users.')->middleware(['role:admin'])->group(function () {
         Route::get('/', [UserController::class, 'index'])->name('index');
         Route::get('/create', [UserController::class, 'create'])->name('create');
@@ -162,7 +176,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin|manager'
         Route::patch('/{id}/toggle-block', [UserController::class, 'toggleBlock'])->name('toggle-block');
         Route::delete('/{id}', [UserController::class, 'destroy'])->name('destroy');
     });
-     // Notification Management Routes (Only Admin)
+    // Notification Management Routes (Only Admin)
     Route::prefix('notifications')->name('notifications.')->middleware(['role:admin'])->group(function () {
         Route::get('/', [AdminNotifyController::class, 'index'])->name('index');
         Route::get('/create', [AdminNotifyController::class, 'create'])->name('create');
@@ -175,27 +189,33 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin|manager'
         Route::get('/{id}/stats', [AdminNotifyController::class, 'stats'])->name('stats');
     });
     // Settings (Both Admin and Manager can access)
-    Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
-    Route::post('/settings', [SettingsController::class, 'update'])->name('settings.update');
-    
+            // Booking settings page
+        Route::get('/settings/bookings', [SettingsController::class, 'bookings'])
+            ->name('settings.bookings'); // used for the page itself
+
+        // Add new option (all three forms currently call these names)
+        Route::post('/settings/bookings', [SettingsController::class, 'store'])
+            ->name('settings.store');
+
+        // Delete option
+        Route::delete('/settings/bookings/{id}', [SettingsController::class, 'destroy'])
+            ->name('settings.destroy');
+
     // Reports (Both Admin and Manager can access)
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
     Route::get('/reports/export', [ReportController::class, 'export'])->name('reports.export');
-    
+
     // Agent Management (Both Admin and Manager can access)
     Route::get('/agents', [AdminAgentsController::class, 'index'])->name('agents.index');
     Route::get('/agents/{agent}', [AdminAgentsController::class, 'show'])->name('agents.show');
-    
+
     // Bookings (Both Admin and Manager can access)
     Route::get('/bookings', [AdminBookingsController::class, 'index'])->name('bookings.index');
     Route::get('/bookings/{booking}', [AdminBookingsController::class, 'show'])->name('bookings.show');
-    
 
-    });
+});
 
-
-
-    Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth'])->group(function () {
     // Notification routes for all authenticated users
     Route::prefix('notifications')->name('notifications.')->group(function () {
         Route::post('/{id}/read', [NotificationController::class, 'markAsRead'])->name('read');
@@ -204,6 +224,6 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin|manager'
     });
 });
 
-Route::get('/agent/test-notifications', function() {
+Route::get('/agent/test-notifications', function () {
     return view('agent.test-notifications');
 })->middleware(['auth', 'role:agent'])->name('agent.test');

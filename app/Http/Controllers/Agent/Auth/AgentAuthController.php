@@ -35,34 +35,6 @@ class AgentAuthController extends Controller
         ])->onlyInput('email');
     }
 
-    public function showRegister()
-    {
-        return view('agent.auth.register');
-    }
-
-    public function register(Request $request)
-    {
-        $data = $request->validate([
-            'name' => ['required','string','max:255'],
-            'email' => ['required','email','max:255','unique:users,email'],
-            'password' => ['required','string','min:6','confirmed'],
-        ]);
-
-        $user = User::create([
-            'name' => $data['name'],
-            'email' => $data['email'],
-            'password' => Hash::make($data['password']),
-            'role' => 'agent',
-            'is_active' => 1,
-            'is_blocked' => 0,
-        ]);
-
-        Auth::login($user);
-        $request->session()->regenerate();
-
-        return redirect()->route('agent.dashboard');
-    }
-
     public function logout(Request $request)
     {
         Auth::logout();

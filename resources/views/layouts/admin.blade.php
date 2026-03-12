@@ -112,7 +112,7 @@
                             <i class="bi bi-gear"></i> Settings
                         </a>
                         <div class="collapse submenu {{ request()->is('admin/settings*') ? 'show' : '' }}" id="settingsMenu">
-                            <a href="#" class="nav-link {{ request()->is('admin/settings/bookings') ? 'active' : '' }}">
+                            <a href="{{ route('admin.settings.bookings') }}" class="nav-link {{ request()->is('admin/settings/bookings') ? 'active' : '' }}">
                                 <i class="bi bi-calendar-check"></i> Bookings
                             </a>
                         </div>

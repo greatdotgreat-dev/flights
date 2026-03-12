@@ -33,4 +33,15 @@ class FlightSegment extends Model
     {
         return $this->belongsTo(Booking::class);
     }
+    protected static function booted(): void
+{
+    static::saved(function ($segment) {
+        $segment->booking?->syncCitiesFromSegments();
+    });
+
+    static::deleted(function ($segment) {
+        $segment->booking?->syncCitiesFromSegments();
+    });
+}
+
 }

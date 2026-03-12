@@ -69,12 +69,12 @@
 
                         <div class="dropdown-divider"></div>
 
-                        {{-- <form method="POST" action="{{ route('agent.logout') }}">
+                        <form method="POST" action="{{ route('agent.logout') }}">
                             @csrf
                             <button type="submit" class="dropdown-item">
                                 <i class="fas fa-sign-out-alt mr-2"></i> Logout
                             </button>
-                        </form> --}}
+                        </form>
                     </div>
                 </li>
             @endauth

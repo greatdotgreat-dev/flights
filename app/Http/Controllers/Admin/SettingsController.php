@@ -52,4 +52,6 @@ class SettingsController extends Controller
         Setting::deleteOption($id);
         return redirect()->back()->with('success', 'Option deleted successfully!');
     }
+
+ 
 }

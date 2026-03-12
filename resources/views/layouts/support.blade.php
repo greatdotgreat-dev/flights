@@ -3,12 +3,15 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Agent Panel | Flight Booking CRM</title>
+    <title>Customer Support Service | Flight Booking CRM</title>
 
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <!-- AdminLTE CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="{{ asset('css/panel.css') }}">
+
     <!-- Google Font: Source Sans Pro -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
 
@@ -33,19 +36,10 @@
                 </li>
 
                 <li class="nav-item d-none d-sm-inline-block">
-                    <a href="{{ route('agent.dashboard') }}" class="nav-link">Dashboard</a>
+                    <a href="{{ route('support.dashboard') }}" class="nav-link">Dashboard</a>
                 </li>
-
-                <li class="nav-item d-none d-sm-inline-block">
-                    <a href="{{ route('agent.bookings.index') }}" class="nav-link">Bookings</a>
-                </li>
+              
             @endauth
-
-            @guest
-                <li class="nav-item d-none d-sm-inline-block">
-                    <a href="{{ route('agent.login') }}" class="nav-link">Agent Login</a>
-                </li>
-            @endguest
         </ul>
 
         <!-- Right navbar links -->
@@ -69,7 +63,7 @@
 
                         <div class="dropdown-divider"></div>
 
-                        <form method="POST" action="{{ route('agent.logout') }}">
+                        <form method="POST" action="{{ route('support.logout') }}">
                             @csrf
                             <button type="submit" class="dropdown-item">
                                 <i class="fas fa-sign-out-alt mr-2"></i> Logout
@@ -81,7 +75,7 @@
 
             @guest
                 <li class="nav-item">
-                    <a class="nav-link" href="{{ route('agent.login') }}">
+                    <a class="nav-link" href="{{ route('support.login') }}">
                         <i class="fas fa-sign-in-alt"></i>
                         <span class="d-none d-md-inline ml-1">Login</span>
                     </a>
@@ -93,9 +87,9 @@
     <!-- Main Sidebar Container -->
     <aside class="main-sidebar sidebar-dark-primary elevation-4">
         <!-- Brand Logo -->
-        <a href="{{ auth()->check() ? route('agent.dashboard') : route('agent.login') }}" class="brand-link">
+        <a href="{{ auth()->check() ? route('support.dashboard') : route('support.login') }}" class="brand-link">
             <i class="fas fa-plane-departure brand-image ml-3"></i>
-            <span class="brand-text font-weight-light">Agent Panel</span>
+            <span class="brand-text font-weight-light">Customer support service</span>
         </a>
 
         <!-- Sidebar -->
@@ -109,7 +103,7 @@
                     </div>
                     <div class="info">
                         <a href="#" class="d-block">{{ auth()->user()->name }}</a>
-                        <small class="text-muted">Agent</small>
+                        <small class="text-muted">CS</small>
                     </div>
                 </div>
 
@@ -119,7 +113,7 @@
 
                         <!-- Dashboard -->
                         <li class="nav-item">
-                            <a href="{{ route('agent.dashboard') }}" class="nav-link {{ request()->routeIs('agent.dashboard') ? 'active' : '' }}">
+                            <a href="{{ route('support.dashboard') }}" class="nav-link {{ request()->routeIs('support.dashboard') ? 'active' : '' }}">
                                 <i class="nav-icon fas fa-tachometer-alt"></i>
                                 <p>Dashboard</p>
                             </a>
@@ -137,18 +131,12 @@
 
                             <ul class="nav nav-treeview">
                                 <li class="nav-item">
-                                    <a href="{{ route('agent.bookings.index') }}" class="nav-link {{ request()->routeIs('agent.bookings.index') ? 'active' : '' }}">
+                                    <a href="{{ route('support.bookings.all') }}" class="nav-link {{ request()->routeIs('support.bookings.all') ? 'active' : '' }}">
                                         <i class="far fa-circle nav-icon"></i>
                                         <p>All Bookings</p>
                                     </a>
                                 </li>
 
-                                <li class="nav-item">
-                                    <a href="{{ route('agent.bookings.create') }}" class="nav-link {{ request()->routeIs('agent.bookings.create') ? 'active' : '' }}">
-                                        <i class="far fa-circle nav-icon"></i>
-                                        <p>Create Booking</p>
-                                    </a>
-                                </li>
                             </ul>
                         </li>
 
@@ -195,8 +183,11 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <!-- Bootstrap 4 -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
+
 <!-- AdminLTE App -->
 <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
+
+
 
 @stack('scripts')
 </body>

@@ -1,82 +1,87 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use App\Models\Booking;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\URL;
-
 
 class AuthConsentController extends Controller
 {
     public function edit($id)
     {
-        // Load the booking with relationships
-            $booking = Booking::with(['passengers', 'cards', 'segments'])->findOrFail($id);
-
-        
-        // Generate the initial HTML content from your email template
-        // This passes the $booking object to emails.booking-auth-template
+        $booking = Booking::with(['passengers', 'cards', 'segments'])->findOrFail($id);
         $emailContent = view('emails.booking-auth-template', compact('booking'))->render();
 
-        // Pass both the object and the rendered HTML to the edit page
         return view('charge.auth.edit', compact('booking', 'emailContent'));
     }
 
     public function preview(Request $request, $id)
-{
-    // Load booking with segments for the premium itinerary display
-    $booking = Booking::with(['segments', 'cards', 'passengers'])->findOrFail($id);
-    
-    // Catch the HTML from the CKEditor
-    $finalContent = $request->input('email_body');
+    {
+        $booking = Booking::with(['segments', 'cards', 'passengers'])->findOrFail($id);
+        $finalContent = $request->input('email_body');
 
-    return view('charge.auth.preview', compact('booking', 'finalContent'));
-}
+        return view('charge.auth.preview', compact('booking', 'finalContent'));
+    }
 
-// send email directly to the customers after using the preview page 
-public function send(Request $request, $id)
-{
-    $booking = Booking::findOrFail($id);
-    
-    // 1. Generate the Secure Signed Link for the button
-    $authLink = URL::temporarySignedRoute(
-        'customer.consent.view', 
-        now()->addHours(48), 
-        ['id' => $booking->id]
-    );
+    public function send(Request $request, $id)
+    {
+        $booking = Booking::findOrFail($id);
 
-    // 2. Get the HTML content from the editor/preview
-    $emailBody = $request->input('final_content');
+        if ($booking->auth_email_sent_at || $booking->status === 'auth_email_sent') {
+            return redirect()->back()->with('error', 'Auth mail has already been sent. Please use resend mail option.');
+        }
 
-    // 3. Render the full premium email wrapper with the content and link
-    $finalHtml = view('emails.customer-final-auth', [
-        'booking' => $booking,
-        'emailBody' => $emailBody,
-        'authLink' => $authLink
-    ])->render();
+        $emailBody = $request->input('final_content');
 
-    // 4. Send the HTML Mail
-    Mail::html($finalHtml, function ($message) use ($booking) {
-        $message->to($booking->customer_email)
-                ->subject('Review & Authorize: Your Flight Booking ' . $booking->booking_reference)
+        $finalHtml = view('emails.customer-final-auth', [
+            'booking' => $booking,
+            'emailBody' => $emailBody,
+        ])->render();
+
+        Mail::html($finalHtml, function ($message) use ($booking) {
+            $message->to($booking->customer_email)
+                ->subject('Booking Acknowledgement Required: ' . $booking->booking_reference)
                 ->from(config('mail.from.address'), 'Travelomile Reservation');
-    });
+        });
 
-    // 5. Status Tracking
-    $booking->update(['status' => 'authemailsent', 'auth_email_sent_at' => now()]);
+        $booking->update([
+            'status' => 'auth_email_sent',
+            'auth_email_sent_at' => now(),
+        ]);
 
-    return redirect()->route('charge.dashboard')->with('success', 'Premium authorization mail sent.');
+        return redirect()->route('charge.dashboard')->with('success', 'Acknowledgement mail sent successfully.');
+    }
+
+    public function resend(Request $request, $id)
+    {
+        $booking = Booking::findOrFail($id);
+
+        $emailBody = $request->input('final_content');
+
+        if (!$emailBody) {
+            $emailBody = view('emails.booking-auth-template', compact('booking'))->render();
+        }
+
+        $finalHtml = view('emails.customer-final-auth', [
+            'booking' => $booking,
+            'emailBody' => $emailBody,
+        ])->render();
+
+        Mail::html($finalHtml, function ($message) use ($booking) {
+            $message->to($booking->customer_email)
+                ->subject('Resent: Booking Acknowledgement Required - ' . $booking->booking_reference)
+                ->from(config('mail.from.address'), 'Travelomile Reservation');
+        });
+
+        $booking->update([
+            'status' => 'auth_email_sent',
+            'auth_email_sent_at' => now(),
+        ]);
+
+        return redirect()->route('charge.dashboard')->with('success', 'Auth mail resent successfully.');
+    }
 
 
-    // 5. Update Status
-    $booking->update([
-        'status' => 'authemailsent', 
-        'auth_email_sent_at' => now()
-    ]);
 
-    return redirect()->route('charge.dashboard')->with('success', 'Authorization mail sent successfully.');
 }
-}
-
-

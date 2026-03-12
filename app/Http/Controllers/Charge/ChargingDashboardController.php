@@ -14,14 +14,13 @@ class ChargingDashboardController extends Controller
         
         // If not logged in, redirect to login
         if (!$chargerId) {
-            return redirect()->route('login');
+            return redirect()->route('charge.login');
         }
 
-        // Get ALL assignments for this charger (pending, accepted, etc.)
         // For the table, let's show assignments that are not rejected
         $assignments = ChargeAssignment::with(['booking', 'agent', 'merchant'])
             ->where('charger_id', $chargerId)
-            ->whereIn('status', ['pending', 'accepted']) // Show both pending and accepted
+            ->where('status', 'accepted')
             ->latest()
             ->paginate(10);
 
@@ -37,10 +36,11 @@ class ChargingDashboardController extends Controller
             ->latest()
             ->first();
 
+
         return view('charge.dashboard', compact(
-            'assignments',     // For the table
-            'pendingCount',    // For the badge
-            'latestPending'    // For the popup
+            'assignments',   
+            'pendingCount',  
+            'latestPending'  
         ));
     }
 }

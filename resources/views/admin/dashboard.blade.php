@@ -2,7 +2,10 @@
 
 @section('title', 'Admin Dashboard')
 
+
 @section('content')
+@include('admin.partials.activity-log-popup')
+
     <div class="row mb-4">
         {{-- Quick Stats --}}
         <div class="col-md-4">
@@ -86,12 +89,10 @@
     {{-- Dummy Reports Section --}}
     <div class="card shadow-sm" id="reports">
         <div class="card-header">
-            <h5 class="mb-0">Reports (Dummy Data)</h5>
+            <h5 class="mb-0">Reports </h5>
         </div>
         <div class="card-body">
-            <p class="text-muted mb-0">
-                Here you can later show charts and analytics (bookings by day, revenue by agent, etc.).
-            </p>
+           @include('admin.partials.mco-reports')
         </div>
     </div>
 @endsection

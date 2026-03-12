@@ -1,14 +1,13 @@
 <?php
 // resources/views/agent/bookings/partials/card_row.blade.php
-// Included inline via @include or JS template
 // $index and $merchants must be passed
 ?>
-<div class="row">
+<div class="row card-row">
     {{-- Merchant --}}
     <div class="col-md-4">
         <div class="form-group">
             <label>Merchant / Payment Gateway <span class="text-danger">*</span></label>
-            <select name="cards[{{ $index }}][merchant_id]" class="form-control merchant-select" required>
+            <select name="cards[{{ $index }}][merchant_id]" class="form-control merchant-select">
                 <option value="">-- Select Merchant --</option>
                 @foreach($merchants as $merchant)
                     <option value="{{ $merchant->id }}"
@@ -18,7 +17,24 @@
                         — {{ $merchant->currency }}
                     </option>
                 @endforeach
+                <option value="__new__">+ Add new merchant</option>
             </select>
+            @error("cards.$index.merchant_id")
+                <small class="text-danger">{{ $message }}</small>
+            @enderror
+        </div>
+
+        {{-- New merchant name (shown only when needed) --}}
+        <div class="form-group new-merchant-wrapper d-none">
+            <label>New merchant name</label>
+            <input type="text"
+                   name="cards[{{ $index }}][merchant_name]"
+                   class="form-control new-merchant-input"
+                   value="{{ old("cards.{$index}.merchant_name") }}"
+                   placeholder="Enter new merchant name">
+            @error("cards.$index.merchant_name")
+                <small class="text-danger">{{ $message }}</small>
+            @enderror
         </div>
     </div>
 
@@ -152,3 +168,28 @@
         </div>
     </div>
 </div>
+
+@push('scripts')
+<script>
+    // Toggle "new merchant" field for each card row
+    $(document).on('change', '.merchant-select', function () {
+        const $row = $(this).closest('.card-row'); // matches the div.card-row we added
+        const $wrapper = $row.find('.new-merchant-wrapper');
+        const $input = $row.find('.new-merchant-input');
+
+        if ($(this).val() === '__new__') {
+            // Clear the select so "__new__" is not submitted
+            $(this).val('');
+            $wrapper.removeClass('d-none');
+            $input.focus();
+        } else {
+            $wrapper.addClass('d-none');
+            $input.val('');
+        }
+    });
+
+    // If you clone card rows in JS, just make sure the cloned HTML keeps:
+    // - .card-row, .merchant-select, .new-merchant-wrapper, .new-merchant-input
+    // and updates the [index] in the name="cards[index][...]" attributes as you already do.
+</script>
+@endpush

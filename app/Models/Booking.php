@@ -29,10 +29,11 @@ class Booking extends Model
     'customer_phone',
     'billing_phone',
     'billing_address',
-    'flight_type',          // ✅ Keep
-    'gk_pnr',              // ✅ Keep
-    'airline_pnr',         // ✅ Keep
-    // ❌ REMOVED: departure_city, arrival_city, departure_date, return_date, airline_name, flight_number, cabin_class
+    'flight_type',  
+    'departure_city',
+    'arrival_city',      
+    'gk_pnr',             
+    'airline_pnr',        
     'total_passengers',
     'adults',
     'children',
@@ -100,6 +101,17 @@ class Booking extends Model
             }
         });
     }
+    public function syncCitiesFromSegments(): void
+{
+    $firstSegment = $this->segments()->orderBy('id')->first();
+    $lastSegment = $this->segments()->orderByDesc('id')->first();
+
+    $this->updateQuietly([
+        'departure_city' => $firstSegment?->from_city,
+        'arrival_city'   => $lastSegment?->to_city,
+    ]);
+}
+
 
     // Relationships
     public function user(): BelongsTo
@@ -175,3 +187,5 @@ class Booking extends Model
     }
 
 }
+
+

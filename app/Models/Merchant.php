@@ -24,9 +24,4 @@ class Merchant extends Model
     {
         return $this->hasMany(BookingCard::class);
     }
-    public function merchant()
-    {
-    return $this->belongsTo(Merchant::class);
-    }
-
 }

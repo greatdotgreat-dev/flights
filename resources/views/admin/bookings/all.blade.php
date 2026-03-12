@@ -71,7 +71,7 @@
                     <label class="form-label">Date To</label>
                     <input type="date" name="date_to" class="form-control" value="{{ request('date_to') }}">
                 </div>
-                <div class="col-md-1 d-flex align-items-center">
+                <div class="col-md-1 d-flex align-items-end">
                     <button type="submit" class="btn btn-primary w-100">
                         <i class="bi bi-funnel"></i> Filter
                     </button>
@@ -126,7 +126,7 @@
                             <th>ID</th>
                             <th>Agent</th>
                             <th>Booking Date</th>
-                            <th>Customer</th>
+                            <th>Detail</th>
                             <th>Service</th>
                             <th>Flight Route</th>
                             <th>PAX</th>

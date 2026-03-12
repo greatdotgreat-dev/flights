@@ -24,13 +24,16 @@
             <!-- This renders the custom HTML edited by the charger -->
             {!! $emailBody !!}
 
-            <div @class(['btn-box'])>
-                <a href="{{ $authLink }}" @class(['approve-btn'])>APPROVE & AUTHORIZE NOW</a>
-            </div>
+<p style="font-size:14px; line-height:24px; color:#cbd5e1;">
+    Kindly reply to this email with your acknowledgement to confirm that you authorize
+    the above booking and payment charges.
+</p>
 
-            <p style="font-size: 13px; color: #666; font-style: italic;">
-                * This is a secure authorization link. It will expire in 48 hours.
-            </p>
+<p style="font-size:14px; line-height:24px; color:#ffffff; font-weight:700;">
+    You may reply with:
+    "I acknowledge and authorize this booking and the related payment charges."
+</p>
+
         </div>
 
         <div @class(['footer'])>

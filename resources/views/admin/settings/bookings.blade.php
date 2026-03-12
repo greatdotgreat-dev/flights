@@ -87,7 +87,7 @@
                                 </form>
                             </li>
                         @empty
-                            <li class="list-group-item text-muted">No options available</li>
+                            <li class="list-group-item text-muted">No options are available</li>
                         @endforelse
                     </ul>
                 </div>

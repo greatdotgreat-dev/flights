@@ -145,19 +145,19 @@ function createPassengerForm(index, type, label, number) {
             </div>
             <div class="col-md-2">
                 <div class="form-group">
-                    <label>Middle Name</label>
+                    <label >Middle Name</label>
                     <input type="text" class="form-control form-control-sm" name="passengers[${index}][middle_name]">
                 </div>
             </div>
             <div class="col-md-3">
                 <div class="form-group">
-                    <label>Last Name <span class="text-danger">*</span></label>
+                    <label >Last Name <span class="text-danger">*</span></label>
                     <input type="text" class="form-control form-control-sm" name="passengers[${index}][last_name]" required>
                 </div>
             </div>
             <div class="col-md-2">
                 <div class="form-group">
-                    <label>Gender <span class="text-danger">*</span></label>
+                    <label >Gender <span class="text-danger">*</span></label>
                     <select class="form-control form-control-sm" name="passengers[${index}][gender]" required>
                         <option value="male">Male</option>
                         <option value="female">Female</option>
@@ -223,39 +223,40 @@ function createPassengerForm(index, type, label, number) {
 // ══════════════════════════════════════════════════════════════
 
 function handleFlightTypeChange() {
-    const flightTypeEl = document.getElementById('flighttype');      // ← must match blade id
+    const flightTypeEl = document.getElementById('flight_type'); // Changed from 'flighttype'
     currentFlightType = flightTypeEl.value;
 
-    const container  = document.getElementById('segmentscontainer');  // ← must match blade id
-    const hint       = document.getElementById('flighttypehint');     // ← must match blade id
-    const addWrapper = document.getElementById('addsegmentwrapper');  // ← must match blade id
+    const container = document.getElementById('segmentscontainer');
+    const hint = document.getElementById('flighttypehint');
+    const addWrapper = document.getElementById('addsegmentwrapper');
 
+    // Clear existing segments
     container.innerHTML = '';
     segmentCount = 0;
 
     if (!currentFlightType) {
-        container.style.display  = 'none';
-        hint.style.display       = 'block';
+        container.style.display = 'none';
+        hint.style.display = 'block';
         addWrapper.style.display = 'none';
         return;
     }
 
-    hint.style.display      = 'none';
+    hint.style.display = 'none';
     container.style.display = 'block';
 
     if (currentFlightType === 'oneway') {
         addWrapper.style.display = 'none';
-        addSegment();
+        addSegment(); // Add 1 segment
     } else if (currentFlightType === 'roundtrip') {
         addWrapper.style.display = 'none';
-        addSegment();
+        addSegment(); // Add outbound
+        addSegment(); // Add return
     } else if (currentFlightType === 'multicity') {
         addWrapper.style.display = 'block';
-        addSegment();
-        addSegment();
+        addSegment(); // Add first segment
+        addSegment(); // Add second segment
     }
 }
-
 
 function addSegment() {
     if (segmentCount >= 6) {
@@ -293,91 +294,96 @@ function addSegment() {
 function buildSegmentHTML(index, segNum, showReturn, isMulti, canRemove) {
     const titleColor = isMulti ? 'bg-info' : 'bg-success';
     const titleText = isMulti 
-        ? `<i class="fas fa-route mr-2"></i>Segment ${segNum}`
-        : (showReturn 
-            ? '<i class="fas fa-exchange-alt mr-2"></i>Flight Route' 
-            : '<i class="fas fa-plane mr-2"></i>Flight Route');
-
+        ? `<i class="fas fa-route mr-2"></i>Segment ${segNum}` 
+        : (showReturn ? `<i class="fas fa-exchange-alt mr-2"></i>Flight Route` : `<i class="fas fa-plane mr-2"></i>Flight Route`);
     const removeBtn = canRemove 
         ? `<button type="button" class="btn btn-sm btn-outline-danger ml-2" onclick="removeSegment(${index})">
-            <i class="fas fa-trash"></i> Remove
-           </button>`
+               <i class="fas fa-trash"></i> Remove
+           </button>` 
         : '';
 
     const returnDateField = showReturn 
         ? `<div class="col-md-3">
-                <div class="form-group">
-                    <label>Return Date <span class="text-danger">*</span></label>
-                    <input type="date" class="form-control" name="segments[${index}][return_date]" 
-                           id="seg_return_${index}" required>
-                </div>
-           </div>`
+               <div class="form-group">
+                   <label>Return Date <span class="text-danger">*</span></label>
+                   <input type="date" class="form-control" name="segments[${index}][return_date]" 
+                          id="segreturn${index}" required>
+               </div>
+           </div>` 
         : '';
 
     return `
-    <div class="segment-block border rounded mb-3" id="segment_block_${index}">
-        <div class="${titleColor} text-white px-3 py-2 rounded-top d-flex justify-content-between align-items-center">
-            <strong>${titleText}</strong>
-            ${removeBtn}
-        </div>
-        <div class="p-3">
-            <div class="row">
-                <div class="col-md-3">
-                    <div class="form-group">
-                        <label>From (Departure City) <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" name="segments[${index}][from_city]" 
-                               id="seg_from_${index}" placeholder="e.g., New York (JFK)" required>
+        <div class="segment-block border rounded mb-3" id="segmentblock${index}">
+            <div class="${titleColor} text-white px-3 py-2 rounded-top d-flex justify-content-between align-items-center">
+                <strong>${titleText}</strong>
+                ${removeBtn}
+            </div>
+            <div class="p-3">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>From (Departure City) <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="segments[${index}][from_city]" 
+                                   id="segfrom${index}" placeholder="e.g., New York (JFK)" required>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>To (Arrival City) <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="segments[${index}][to_city]" 
+                                   id="segto${index}" placeholder="e.g., London (LHR)" required>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>Departure Date <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" name="segments[${index}][departure_date]" 
+                                   id="segdep${index}" required>
+                        </div>
+                    </div>
+
+                    ${returnDateField}
+
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>Cabin Class <span class="text-danger">*</span></label>
+                            <select class="form-control" name="segments[${index}][cabin_class]" required>
+                                ${cabinOptions}
+                            </select>
+                        </div>
                     </div>
                 </div>
-                <div class="col-md-3">
-                    <div class="form-group">
-                        <label>To (Arrival City) <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" name="segments[${index}][to_city]" 
-                               id="seg_to_${index}" placeholder="e.g., London (LHR)" required>
+
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label>Airline Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="segments[${index}][airline_name]" 
+                                   placeholder="e.g., British Airways" required>
+                        </div>
                     </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="form-group">
-                        <label>Departure Date <span class="text-danger">*</span></label>
-                        <input type="date" class="form-control" name="segments[${index}][departure_date]" 
-                               id="seg_dep_${index}" required>
+
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label>Flight Number</label>
+                            <input type="text" class="form-control" name="segments[${index}][flight_number]" 
+                                   placeholder="e.g., BA 178 (optional)">
+                        </div>
                     </div>
-                </div>
-                ${returnDateField}
-                <div class="col-md-3">
-                    <div class="form-group">
-                        <label>Cabin Class <span class="text-danger">*</span></label>
-                        <select class="form-control" name="segments[${index}][cabin_class]" required>
-                            ${cabinOptions}
-                        </select>
+
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label>Segment PNR <small class="text-muted">(optional override)</small></label>
+                            <input type="text" class="form-control" name="segments[${index}][segment_pnr]" 
+                                   placeholder="Segment-specific PNR if different">
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="row">
-                <div class="col-md-4">
-                    <div class="form-group">
-                        <label>Airline Name <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" name="segments[${index}][airline_name]" 
-                               placeholder="e.g., British Airways" required>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="form-group">
-                        <label>Flight Number</label>
-                        <input type="text" class="form-control" name="segments[${index}][flight_number]" 
-                               placeholder="e.g., BA 178 (optional)">
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="form-group">
-                        <label>Segment PNR <small class="text-muted">(optional override)</small></label>
-                        <input type="text" class="form-control" name="segments[${index}][segment_pnr]" 
-                               placeholder="Segment-specific PNR if different">
-                    </div>
-                </div>
-            </div>
         </div>
-    </div>`;
+    `;
 }
 
 function removeSegment(index) {
@@ -403,32 +409,37 @@ function renumberSegments() {
 // ══════════════════════════════════════════════════════════════
 
 function recalcMCO() {
-    const charged = parseFloat(document.getElementById('amount_charged').value) || 0;
-    const airline = parseFloat(document.getElementById('amount_paid_airline').value) || 0;
+    const charged = parseFloat(document.getElementById('amount_charged').value) || 0; // Changed
+    const airline = parseFloat(document.getElementById('amount_paid_airline').value) || 0; // Changed
     const suggested = (charged - airline).toFixed(2);
 
-    const hint = document.getElementById('mco_hint');
-    const mcoBox = document.getElementById('mco_suggested');
-    const reqTotal = document.getElementById('required_total_display');
+    const hint = document.getElementById('mcohint');
+    const mcoBox = document.getElementById('mcosuggested');
+    const reqTotal = document.getElementById('requiredtotaldisplay');
 
-    if (charged > 0 || airline > 0) {
+    if (charged > 0 && airline > 0) {
         hint.style.display = 'inline';
-        mcoBox.textContent = '$' + suggested;
+        mcoBox.textContent = suggested;
     } else {
         hint.style.display = 'none';
     }
 
     // Update split payment required total display
-    if (reqTotal) reqTotal.textContent = '$' + charged.toFixed(2);
+    if (reqTotal) {
+        reqTotal.textContent = charged.toFixed(2);
+    }
 
-    // For full payment: auto-fill charge amount on card 1
-    if (document.getElementById('payment_full').checked) {
+    // For full payment, auto-fill charge amount on card 1
+    if (document.getElementById('paymentfull').checked) {
         const firstCharge = document.querySelector('.charge-amount-input');
-        if (firstCharge) firstCharge.value = charged.toFixed(2);
+        if (firstCharge) {
+            firstCharge.value = charged.toFixed(2);
+        }
     }
 
     updateCardTotal();
 }
+
 
 function handlePaymentTypeChange() {
     const isSplit = document.getElementById('payment_split').checked;
@@ -668,14 +679,16 @@ function buildYearOptions() {
 // ══════════════════════════════════════════════════════════════
 
 function toggleService(service) {
-    const checkbox = document.getElementById(`${service}_required`);
-    const section = document.getElementById(`${service}Section`);
-    if (checkbox.checked) {
+    const checkbox = document.getElementById(service + '_required'); // Now matches: hotel_required, cab_required, insurance_required
+    const section = document.getElementById(service + 'Section');
+    
+    if (checkbox && checkbox.checked) {
         section.style.display = 'block';
     } else {
         section.style.display = 'none';
     }
 }
+
 
 // ══════════════════════════════════════════════════════════════
 // INITIALIZATION ON PAGE LOAD
@@ -685,54 +698,76 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
      // ── Flight type listener ──────────────────────────────────
- document.addEventListener('DOMContentLoaded', function () {
-
-    // ── Use event delegation for flight type (works with @include partials) ──
-    document.addEventListener('change', function (e) {
-        if (e.target && e.target.id === 'flighttype') {
-            handleFlightTypeChange();
-        }
-    });
-    // ── Passengers ────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function() {
+    // Passengers
     updatePassengerUI();
-
-    // ── Card #0 init ──────────────────────────────────────────
+    
+    // Card 0 init
     initCardNumberInput(0);
-
-    // ── Payment type listeners ────────────────────────────────
-    document.querySelectorAll('input[name="payment_type"]').forEach(radio => {
+    
+    // Payment type listeners
+    document.querySelectorAll('input[name="paymenttype"]').forEach(radio => {
         radio.addEventListener('change', handlePaymentTypeChange);
     });
-
-    // ── Amount listeners ──────────────────────────────────────
+    
+    // Amount listeners - FIXED IDs
     document.getElementById('amount_charged').addEventListener('input', recalcMCO);
     document.getElementById('amount_paid_airline').addEventListener('input', recalcMCO);
-
-    // ── Optional services already checked (validation fail restore) ──
+    
+    // Optional services already checked (validation fail restore)
     ['hotel', 'cab', 'insurance'].forEach(service => {
-        const checkbox = document.getElementById(`${service}_required`);
-        const section  = document.getElementById(`${service}Section`);
-        if (checkbox && section && checkbox.checked) {
+        const checkbox = document.getElementById(service + '_required');
+        const section = document.getElementById(service + 'Section');
+        if (checkbox && checkbox.checked) {
             section.style.display = 'block';
         }
     });
-
-    // ── Restore flight type if old() value exists (validation fail) ──
-    const flightTypeEl = document.getElementById('flighttype');
+    
+    // Restore flight type if old value exists (validation fail)
+    const flightTypeEl = document.getElementById('flight_type');
     if (flightTypeEl && flightTypeEl.value) {
         handleFlightTypeChange();
     }
-
-    // ── MCO init ──────────────────────────────────────────────
+    
+    // Flight type change listener
+    if (flightTypeEl) {
+        flightTypeEl.addEventListener('change', handleFlightTypeChange);
+    }
+    
+    // MCO init
     recalcMCO();
+    
+    // Form submit guard (prevent submit if no segments)
+    const form = document.getElementById('bookingForm');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            const segments = document.querySelectorAll('.segment-block');
+            if (segments.length === 0) {
+                e.preventDefault();
+                alert("Please select a Flight Type and fill in the flight segment details before submitting.");
+                
+                // Scroll to flight section
+                const flightTypeEl = document.getElementById('flight_type');
+                if (flightTypeEl) {
+                    flightTypeEl.scrollIntoView({ behavior: 'smooth' });
+                }
+                return false;
+            }
+        });
+    }
 });
-document.getElementById('bookingForm').addEventListener('submit', function (e) {
+
+document.getElementById('bookingForm').addEventListener('submit', function(e) {
     const segments = document.querySelectorAll('.segment-block');
     if (segments.length === 0) {
         e.preventDefault();
-        alert('Please select a Flight Type and fill in the flight segment details before submitting.');
+        alert("Please select a Flight Type and fill in the flight segment details before submitting.");
+        
         // Scroll to flight section
-        document.getElementById('flighttype').scrollIntoView({ behavior: 'smooth' });
+        const flightTypeEl = document.getElementById('flight_type'); // Changed
+        if (flightTypeEl) {
+            flightTypeEl.scrollIntoView({ behavior: 'smooth' });
+        }
         return false;
     }
 });
@@ -762,7 +797,7 @@ document.getElementById('bookingForm').addEventListener('submit', function (e) {
         radio.addEventListener('change', handlePaymentTypeChange);
     });
 
-    document.getElementById('flighttype').addEventListener('change', handleFlightTypeChange);
+    document.getElementById('flight_type').addEventListener('change', handleFlightTypeChange);
 
     // Auto-calculate MCO on page load if values exist
     recalcMCO();
@@ -782,6 +817,388 @@ document.getElementById('bookingForm').addEventListener('submit', function (e) {
             }
         });
     }
+
+
+    // After DOMContentLoaded, force defaults if empty
+const serviceEl = document.getElementById('serviceprovided');
+const callEl = document.getElementById('calltype');
+if (serviceEl && !serviceEl.value) serviceEl.value = 'Flight';  // or first option
+if (callEl && !callEl.value) callEl.selectedIndex = 1;  // select first real option
+
 });
 
 
+/* ============================================================
+   SPLIT PAYMENT PATCH
+   ============================================================ */
+
+(function () {
+    if (window.__splitPaymentPatchLoaded) return;
+    window.__splitPaymentPatchLoaded = true;
+
+    function spGetMerchantOptions() {
+        if (window.merchantOptions && String(window.merchantOptions).trim() !== '') {
+            return window.merchantOptions;
+        }
+        return '<option value="">-- Select Merchant --</option>';
+    }
+
+    function spBuildMonthOptions() {
+        let html = '';
+        for (let m = 1; m <= 12; m++) {
+            const v = String(m).padStart(2, '0');
+            html += `<option value="${v}">${v}</option>`;
+        }
+        return html;
+    }
+
+    function spBuildYearOptions() {
+        let html = '';
+        const current = new Date().getFullYear();
+        for (let y = current; y <= current + 15; y++) {
+            html += `<option value="${y}">${y}</option>`;
+        }
+        return html;
+    }
+
+    function spGetCardCount() {
+        return document.querySelectorAll('#cardscontainer .card-item').length;
+    }
+
+    function spUpdateTitles() {
+        document.querySelectorAll('#cardscontainer .card-item').forEach((block, i) => {
+            const title = block.querySelector('strong');
+            if (title) {
+                title.innerHTML = `<i class="fas fa-credit-card mr-2 text-success"></i>Card ${i + 1}`;
+            }
+
+            const removeBtn = block.querySelector('.sp-remove-card');
+            if (removeBtn) {
+                removeBtn.style.display = i === 0 ? 'none' : 'inline-block';
+                removeBtn.setAttribute('data-index', i);
+            }
+        });
+    }
+
+    function spUpdateCardTotal() {
+        let total = 0;
+        document.querySelectorAll('#cardscontainer .charge-amount-input').forEach(inp => {
+            total += parseFloat(inp.value || 0);
+        });
+
+        const charged = parseFloat((document.getElementById('amountcharged') || {}).value || 0);
+
+        const totalEl = document.getElementById('cardtotaldisplay');
+        const reqEl = document.getElementById('requiredtotaldisplay');
+        const matchEl = document.getElementById('cardmatchmsg');
+
+        if (totalEl) totalEl.textContent = total.toFixed(2);
+        if (reqEl) reqEl.textContent = charged.toFixed(2);
+
+        if (!matchEl || !totalEl) return;
+
+        if (Math.abs(total - charged) < 0.01) {
+            totalEl.className = 'font-weight-bold text-success';
+            matchEl.innerHTML = '<span class="badge badge-success"><i class="fas fa-check mr-1"></i>Card totals match!</span>';
+        } else {
+            totalEl.className = 'font-weight-bold text-danger';
+            const diff = charged - total;
+            const msg = diff >= 0
+                ? `${diff.toFixed(2)} still unallocated`
+                : `${Math.abs(diff).toFixed(2)} over-allocated`;
+            matchEl.innerHTML = `<span class="badge badge-danger"><i class="fas fa-exclamation-triangle mr-1"></i>${msg}</span>`;
+        }
+    }
+
+    function spInitCardNumberInput(index) {
+        const input = document.getElementById('cardnum' + index);
+        if (!input || input.dataset.spBound === '1') return;
+
+        input.dataset.spBound = '1';
+
+        input.addEventListener('input', function () {
+            let v = this.value.replace(/\D/g, '').substring(0, 16);
+            this.value = v.replace(/(.{4})/g, '$1 ').trim();
+
+            const typeSelect = document.getElementById('cardtype' + index);
+            if (!typeSelect) return;
+
+            if (/^4/.test(v)) typeSelect.value = 'VISA';
+            else if (/^5[1-5]/.test(v)) typeSelect.value = 'MASTERCARD';
+            else if (/^3[47]/.test(v)) typeSelect.value = 'AMEX';
+            else if (/^(6011|65)/.test(v)) typeSelect.value = 'DISCOVER';
+            else typeSelect.value = '';
+        });
+    }
+
+    function spBindExistingCard() {
+        const firstBlock = document.querySelector('#cardscontainer .card-item');
+        if (!firstBlock) return;
+
+        let firstCharge = firstBlock.querySelector('.charge-amount-input');
+        if (firstCharge && firstCharge.dataset.spBound !== '1') {
+            firstCharge.dataset.spBound = '1';
+            firstCharge.addEventListener('input', spUpdateCardTotal);
+        }
+
+        const existingCardInput = document.getElementById('cardnum0');
+        if (existingCardInput) spInitCardNumberInput(0);
+
+        const existingRemoveBtn = firstBlock.querySelector('.remove-card-btn');
+        if (existingRemoveBtn) {
+            existingRemoveBtn.classList.add('sp-remove-card');
+            existingRemoveBtn.style.display = 'none';
+        }
+
+        spUpdateTitles();
+    }
+
+    function spAddCard() {
+        const container = document.getElementById('cardscontainer');
+        if (!container) return;
+
+        const index = spGetCardCount();
+        const num = index + 1;
+        const merchantOptions = spGetMerchantOptions();
+        const months = spBuildMonthOptions();
+        const years = spBuildYearOptions();
+
+        const html = `
+            <div class="card-item border rounded mb-3" id="cardblock${index}">
+                <div class="bg-light px-3 py-2 d-flex justify-content-between align-items-center rounded-top">
+                    <strong><i class="fas fa-credit-card mr-2 text-success"></i>Card ${num}</strong>
+                    <button type="button" class="btn btn-sm btn-outline-danger sp-remove-card" data-index="${index}">
+                        <i class="fas fa-trash"></i> Remove
+                    </button>
+                </div>
+
+                <div class="p-3">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Merchant Payment Gateway <span class="text-danger">*</span></label>
+                                <select name="cards[${index}][merchantid]" class="form-control" required>
+                                    <option value="">-- Select Merchant --</option>
+                                    ${merchantOptions}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Card Holder Name <span class="text-danger">*</span></label>
+                                <input type="text" name="cards[${index}][cardholdername]" class="form-control" required placeholder="As on card">
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Card Number <span class="text-danger">*</span></label>
+                                <input type="text" name="cards[${index}][cardnumber]" id="cardnum${index}" class="form-control card-number-input" required placeholder="1234 5678 9012 3456" maxlength="19" autocomplete="off">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>Card Type <span class="text-danger">*</span></label>
+                                <select name="cards[${index}][cardtype]" id="cardtype${index}" class="form-control" required>
+                                    <option value="">Auto Detect</option>
+                                    <option value="VISA">VISA</option>
+                                    <option value="MASTERCARD">MASTERCARD</option>
+                                    <option value="AMEX">AMEX</option>
+                                    <option value="DISCOVER">DISCOVER</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label>Exp. Month <span class="text-danger">*</span></label>
+                                <select name="cards[${index}][expirationmonth]" class="form-control" required>
+                                    <option value="">MM</option>
+                                    ${months}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label>Exp. Year <span class="text-danger">*</span></label>
+                                <select name="cards[${index}][expirationyear]" class="form-control" required>
+                                    <option value="">YYYY</option>
+                                    ${years}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label>CVV <span class="text-danger">*</span></label>
+                                <input type="password" name="cards[${index}][cvv]" class="form-control" required maxlength="4" placeholder="123" autocomplete="off">
+                            </div>
+                        </div>
+
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>Charge Amount <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text">$</span>
+                                    </div>
+                                    <input type="number" name="cards[${index}][chargeamount]" class="form-control charge-amount-input" required step="0.01" min="0.01" placeholder="0.00">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Billing Email <span class="text-danger">*</span></label>
+                                <input type="email" name="cards[${index}][billingemail]" class="form-control" required>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Billing Phone <span class="text-danger">*</span></label>
+                                <input type="text" name="cards[${index}][billingphone]" class="form-control" required>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Billing Address <span class="text-danger">*</span></label>
+                                <textarea name="cards[${index}][billingaddress]" class="form-control" rows="2" required placeholder="Street, City, State, ZIP"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        container.insertAdjacentHTML('beforeend', html);
+
+        const newCharge = container.querySelector(`#cardblock${index} .charge-amount-input`);
+        if (newCharge) newCharge.addEventListener('input', spUpdateCardTotal);
+
+        spInitCardNumberInput(index);
+        spUpdateTitles();
+        spUpdateCardTotal();
+    }
+
+    function spRemoveCard(btnOrIndex) {
+        let block = null;
+
+        if (typeof btnOrIndex === 'number') {
+            block = document.getElementById('cardblock' + btnOrIndex);
+        } else if (btnOrIndex && btnOrIndex.closest) {
+            block = btnOrIndex.closest('.card-item');
+        }
+
+        if (!block) return;
+
+        const allBlocks = document.querySelectorAll('#cardscontainer .card-item');
+        if (allBlocks.length <= 1) return;
+
+        block.remove();
+        spUpdateTitles();
+        spUpdateCardTotal();
+    }
+
+    function spRemoveAllExtraCards() {
+        const blocks = document.querySelectorAll('#cardscontainer .card-item');
+        blocks.forEach((block, i) => {
+            if (i > 0) block.remove();
+        });
+        spUpdateTitles();
+        spUpdateCardTotal();
+    }
+
+    function spHandlePaymentTypeChange() {
+        const isSplit = !!(document.getElementById('paymentsplit') && document.getElementById('paymentsplit').checked);
+        const note = document.getElementById('splitpaymentnote');
+        const addBtnWrap = document.getElementById('addcardbtnwrapper');
+        const totalBar = document.getElementById('cardtotalbar');
+        const amountCharged = parseFloat((document.getElementById('amountcharged') || {}).value || 0);
+
+        if (note) note.style.display = isSplit ? 'block' : 'none';
+        if (addBtnWrap) addBtnWrap.style.display = isSplit ? 'block' : 'none';
+        if (totalBar) totalBar.style.display = isSplit ? 'block' : 'none';
+
+        const firstCharge = document.querySelector('#cardscontainer .charge-amount-input');
+
+        if (isSplit) {
+            if (firstCharge && !firstCharge.value) {
+                firstCharge.value = amountCharged > 0 ? amountCharged.toFixed(2) : '';
+            }
+        } else {
+            spRemoveAllExtraCards();
+            if (firstCharge) {
+                firstCharge.value = amountCharged.toFixed(2);
+            }
+        }
+
+        spUpdateCardTotal();
+    }
+
+    function spBindPaymentEvents() {
+        const addBtn = document.querySelector('#addcardbtnwrapper button');
+        if (addBtn && addBtn.dataset.spBound !== '1') {
+            addBtn.dataset.spBound = '1';
+            addBtn.addEventListener('click', function (e) {
+                e.preventDefault();
+                spAddCard();
+            });
+        }
+
+        document.querySelectorAll('input[name="paymenttype"]').forEach(radio => {
+            if (radio.dataset.spBound !== '1') {
+                radio.dataset.spBound = '1';
+                radio.addEventListener('change', spHandlePaymentTypeChange);
+            }
+        });
+
+        const amountCharged = document.getElementById('amountcharged');
+        if (amountCharged && amountCharged.dataset.spBound !== '1') {
+            amountCharged.dataset.spBound = '1';
+            amountCharged.addEventListener('input', function () {
+                const full = document.getElementById('paymentfull');
+                const firstCharge = document.querySelector('#cardscontainer .charge-amount-input');
+                if (full && full.checked && firstCharge) {
+                    firstCharge.value = parseFloat(this.value || 0).toFixed(2);
+                }
+                spUpdateCardTotal();
+            });
+        }
+
+        const cardsContainer = document.getElementById('cardscontainer');
+        if (cardsContainer && cardsContainer.dataset.spDelegateBound !== '1') {
+            cardsContainer.dataset.spDelegateBound = '1';
+            cardsContainer.addEventListener('click', function (e) {
+                const btn = e.target.closest('.sp-remove-card');
+                if (!btn) return;
+                e.preventDefault();
+                spRemoveCard(btn);
+            });
+        }
+    }
+
+    function spInit() {
+        spBindExistingCard();
+        spBindPaymentEvents();
+        spHandlePaymentTypeChange();
+        spUpdateCardTotal();
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', spInit);
+    } else {
+        spInit();
+    }
+
+    window.addCard = spAddCard;
+    window.removeCard = spRemoveCard;
+})();

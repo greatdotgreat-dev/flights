@@ -45,38 +45,73 @@ class BookingController extends Controller
     }
 
     // AGENT: Store (your full logic from Agent/BookingController.php)[file:61]
-    public function agentStore(Request $request)
-    {
-        $validated = $request->validate([
-            // Your full validation rules here (from file:61)
-            'calltype' => 'required|string',
-            'serviceprovided' => 'required|string',
-            // ... all other rules
-        ]);
+public function agentStore(Request $request) {
 
-        DB::beginTransaction();
-        try {
-            // 1. Create Booking (your exact code)
-            $booking = Booking::create([
-                'user_id' => auth()->id(),
-                'agent_custom_id' => auth()->user()->agent_custom_id ?? 'AG'.auth()->id(),
-                // ... all fields from validated
-                'status' => 'pending',
-            ]);
+    $validated = $request->validate([
+        'calltype' => 'required|string|exists:call_types,name',  // Match your CallType model
+        'serviceprovided' => 'required|string|in:Flight,Hotel,Package',
+        'servicetype' => 'required|string|in:New Booking,Modification,Cancellation',
+        'bookingportal' => 'required|string|in:amadeus,sabre,worldspan,gds,website',
+        'customername' => 'required|string|max:255',
+        'customeremail' => 'required|email',
+        'customerphone' => 'required|string',
+        'billingphone' => 'required|string',
+        'billingaddress' => 'required|string',
+        'adults' => 'integer|min:1|max:9',
+        'children' => 'integer|min:0|max:9',
+        'infants' => 'integer|min:0|max:9',
+        'flighttype' => 'required_if:serviceprovided,Flight|in:oneway,roundtrip,multicity',
+        'segments' => 'required_if:serviceprovided,Flight|array|min:1',
+        'segments.*.from_city' => 'required|string',
+        'segments.*.to_city' => 'required|string',
+        'segments.*.departure_date' => 'required|date',
+        'segments.*.cabin_class' => 'required|string',
+        // Cards/Passengers dynamic: use sometimes/required_unless
+        'cards' => 'array|min:1',
+        'cards.*.merchant_id' => 'required|exists:merchants,id',
+        'cards.*.charge_amount' => 'required|numeric|min:0.01',
+        'passengers' => 'array|min:1',
+        // Hotel/Cab/Insurance conditional
+        'hotelrequired' => 'boolean',
+        // ... expand as needed
+    ]);
 
-            // 2. Segments, Passengers, Cards, Hotel/Cab/Insurance (your exact code)
-            // Copy from file:61 store() method
+    DB::beginTransaction();
+    try {
+        $booking = Booking::create(array_merge($validated, [
+            'userid' => auth()->id(),
+            'agentcustomid' => auth()->user()->agentcustomid ?? 'AG' . auth()->id(),
+            'status' => 'pending',
+            'bookingreference' => 'BTK-' . strtoupper(substr(uniqid(), -5)),
+        ]));
 
-            DB::commit();
-
-            return redirect()->route('agent.bookings.show', $booking->id)
-                ->with('success', 'Booking created! Ref: '.$booking->booking_reference);
-        } catch (\Exception $e) {
-            DB::rollBack();
-
-            return back()->withErrors(['error' => 'Failed: '.$e->getMessage()])->withInput();
+        // Create related records
+        if (isset($validated['segments'])) {
+            foreach ($validated['segments'] as $seg) {
+                $booking->segments()->create($seg);
+            }
         }
+        if (isset($validated['passengers'])) {
+            foreach ($validated['passengers'] as $pass) {
+                $booking->passengers()->create($pass);
+            }
+        }
+        if (isset($validated['cards'])) {
+            foreach ($validated['cards'] as $card) {
+                $booking->cards()->create($card);
+            }
+        }
+        // Hotel/Cab/Insurance similarly
+
+        DB::commit();
+        return redirect()->route('agent.bookings.show', $booking->id)
+            ->with('success', 'Booking created! Ref: ' . $booking->bookingreference);
+    } catch (Exception $e) {
+        DB::rollBack();
+        return back()->withErrors(['error' => $e->getMessage()])->withInput();
     }
+}
+
 
     // AGENT: Show booking
 public function agentShow(Booking $booking)
