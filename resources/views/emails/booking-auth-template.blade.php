@@ -16,20 +16,13 @@
 
                 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"
                     style="max-width:760px; background-color:#111827; border-radius:18px; overflow:hidden; border:1px solid #1f2937;">
-
                     {{-- Header --}}
                     <tr>
-                        <td
-                            style="background:linear-gradient(135deg,#111827 0%,#1f2937 100%); padding:32px 30px; text-align:center; border-bottom:1px solid #243042;">
-                            <div
-                                style="font-size:13px; letter-spacing:2px; text-transform:uppercase; color:#93c5fd; margin-bottom:10px;">
-                                Travel Booking Authorization
-                            </div>
-                            <div
-                                style="font-size:28px; line-height:36px; font-weight:700; color:#ffffff; margin-bottom:8px;">
+                        <td style="background:linear-gradient(135deg,#111827 0%,#1f2937 100%); padding:32px 30px; text-align:center; border-bottom:1px solid #243042;">
+                            <div style="font-size:28px; line-height:36px; font-weight:700; color:#ffffff;">
                                 Booking Confirmation
                             </div>
-                            <div style="font-size:15px; color:#9ca3af; line-height:24px;">
+                            <div style="font-size:14px; color:#9ca3af; line-height:24px;">
                                 Your reservation and payment authorization details are listed below.
                             </div>
                         </td>
@@ -50,7 +43,7 @@
                                             {{ $booking->booking_reference }}
                                         </div>
                                         <div style="font-size:14px; color:#60a5fa;">
-                                            Total Cost: {{ $booking->currency }} {{
+                                            Total Cost for all passengers: {{ $booking->currency }} {{
                                             number_format($booking->amount_charged, 2) }}
                                         </div>
                                     </td>

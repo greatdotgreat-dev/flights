@@ -1,392 +1,527 @@
 @extends('layouts.agent')
 
 @section('content')
-<div class="container-fluid pt-4">
-    <!-- Breadcrumb -->
-    <div class="row mb-3">
-        <div class="col-sm-6">
-            <h1 class="m-0 text-dark">Create New Booking</h1>
-        </div>
-        <div class="col-sm-6">
-            <ol class="breadcrumb float-sm-right">
-                <li class="breadcrumb-item"><a href="{{ route('agent.dashboard') }}">Dashboard</a></li>
-                <li class="breadcrumb-item"><a href="{{ route('agent.bookings.index') }}">Bookings</a></li>
-                <li class="breadcrumb-item active">Create</li>
-            </ol>
-        </div>
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1 class="h3 mb-0">Create Booking</h1>
+        
     </div>
 
-    <!-- Validation Errors -->
-    @if ($errors->any())
-    <div class="alert alert-danger alert-dismissible">
-        <button type="button" class="close" data-dismiss="alert">&times;</button>
-        <h5><i class="icon fas fa-ban"></i> Validation Errors!</h5>
-        <ul class="mb-0">
-            @foreach ($errors->all() as $error)
-                <li>{{ $error }}</li>
-            @endforeach
-        </ul>
-    </div>
+    @if(session('success'))
+        <div class="alert alert-success">{{ session('success') }}</div>
+    @endif
+
+    @if($errors->any())
+        <div class="alert alert-danger">
+            <strong>Please fix the following errors:</strong>
+            <ul class="mb-0 mt-2">
+                @foreach($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
     @endif
 
     <form action="{{ route('agent.bookings.store') }}" method="POST" id="bookingForm">
         @csrf
 
-        <!-- Section 1: Call & Service Information -->
-        <div class="card">
-            <div class="card-header bg-primary text-white">
-                <h3 class="card-title"><i class="fas fa-phone-alt mr-2"></i>Call & Service Information</h3>
-            </div>
+        {{-- 1. Booking Information --}}
+        <div class="card mb-4">
+            <div class="card-header"><strong>1. Booking Information</strong></div>
             <div class="card-body">
                 <div class="row">
-                    <div class="col-md-3">
-                        <div class="form-group">
-                            <label for="booking_date">Booking Date <span class="text-danger">*</span></label>
-                            <input type="date" class="form-control" id="booking_date" name="booking_date" 
-                                   value="{{ old('booking_date', date('Y-m-d')) }}" required>
-                        </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Booking Date <span class="text-danger">*</span></label>
+                        <input type="date" name="booking_date" class="form-control"
+                               value="{{ old('booking_date', date('Y-m-d')) }}" required>
                     </div>
 
-                    <div class="col-md-3">
-                        <div class="form-group">
-                            <label for="call_type">Call Type <span class="text-danger">*</span></label>
-                            <select class="form-control" id="call_type" name="call_type" required>
-                                <option value="">-- Select Call Type --</option>
-                                @foreach($callTypes as $type)
-                                    <option value="{{ $type->type_name }}" {{ old('call_type') == $type->type_name ? 'selected' : '' }}>
-                                        {{ $type->type_name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Call Type <span class="text-danger">*</span></label>
+                        <select name="call_type" class="form-control" required>
+                            <option value="">Select Call Type</option>
+                            @foreach($callTypes as $type)
+                                <option value="{{ $type->type_name }}"
+                                    {{ old('call_type') == $type->type_name ? 'selected' : '' }}>
+                                    {{ $type->type_name }}
+                                </option>
+                            @endforeach
+                        </select>
                     </div>
 
-                    <div class="col-md-3">
-                        <div class="form-group">
-                            <label for="service_provided">Service Provided <span class="text-danger">*</span></label>
-                            <select class="form-control" id="service_provided" name="service_provided" required>
-                                <option value="">-- Select Service --</option>
-                                <option value="Flight" {{ old('service_provided') == 'Flight' ? 'selected' : '' }}>Flight</option>
-                                <option value="Hotel" {{ old('service_provided') == 'Hotel' ? 'selected' : '' }}>Hotel</option>
-                                <option value="Package" {{ old('service_provided') == 'Package' ? 'selected' : '' }}>Package</option>
-                            </select>
-                        </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Service Provided <span class="text-danger">*</span></label>
+                        <select name="service_provided" id="service_provided" class="form-control" required>
+                            <option value="">Select Service</option>
+                            @foreach($serviceProvidedOptions as $option)
+                                <option value="{{ $option }}"
+                                    {{ old('service_provided', 'Flight') == $option ? 'selected' : '' }}>
+                                    {{ $option }}
+                                </option>
+                            @endforeach
+                        </select>
                     </div>
 
-                    <div class="col-md-3">
-                        <div class="form-group">
-                            <label for="service_type">Service Type <span class="text-danger">*</span></label>
-                            <select class="form-control" id="service_type" name="service_type" required>
-                                <option value="">-- Select Type --</option>
-                                <option value="New Booking" {{ old('service_type') == 'New Booking' ? 'selected' : '' }}>New Booking</option>
-                                <option value="Modification" {{ old('service_type') == 'Modification' ? 'selected' : '' }}>Modification</option>
-                                <option value="Cancellation" {{ old('service_type') == 'Cancellation' ? 'selected' : '' }}>Cancellation</option>
-                            </select>
-                        </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Service Type <span class="text-danger">*</span></label>
+                        <select name="service_type" class="form-control" required>
+                            <option value="">Select Service Type</option>
+                            @foreach($serviceTypes as $type)
+                                <option value="{{ $type->type_name }}"
+                                    {{ old('service_type') == $type->type_name ? 'selected' : '' }}>
+                                    {{ $type->type_name }}
+                                </option>
+                            @endforeach
+                        </select>
                     </div>
                 </div>
 
                 <div class="row">
-                    <div class="col-md-3">
-                        <div class="form-group">
-                            <label for="booking_portal">Booking Portal <span class="text-danger">*</span></label>
-                            <select class="form-control" id="booking_portal" name="booking_portal" required>
-                                <option value="">-- Select Portal --</option>
-                                <option value="amadeus" {{ old('booking_portal') == 'amadeus' ? 'selected' : '' }}>Amadeus</option>
-                                <option value="sabre" {{ old('booking_portal') == 'sabre' ? 'selected' : '' }}>Sabre</option>
-                                <option value="worldspan" {{ old('booking_portal') == 'worldspan' ? 'selected' : '' }}>Worldspan</option>
-                                <option value="gds" {{ old('booking_portal') == 'gds' ? 'selected' : '' }}>GDS</option>
-                                <option value="website" {{ old('booking_portal') == 'website' ? 'selected' : '' }}>Website</option>
-                            </select>
-                        </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Booking Portal <span class="text-danger">*</span></label>
+                        <select name="booking_portal" class="form-control" required>
+                            <option value="">Select Portal</option>
+                            @foreach(['amadeus','sabre','worldspan','gds','website'] as $portal)
+                                <option value="{{ $portal }}"
+                                    {{ old('booking_portal') == $portal ? 'selected' : '' }}>
+                                    {{ strtoupper($portal) }}
+                                </option>
+                            @endforeach
+                        </select>
                     </div>
 
-                    <div class="col-md-3">
-                        <div class="form-group">
-                            <label>&nbsp;</label>
-                            <div class="custom-control custom-checkbox">
-                                <input type="checkbox" class="custom-control-input" id="email_auth_taken" 
-                                       name="email_auth_taken" value="1" {{ old('email_auth_taken') ? 'checked' : '' }} id="email_auth_taken">
-                                <label class="custom-control-label" for="email_auth_taken">Email Authorization Taken</label>
-                            </div>
+                    <div class="col-md-3 mb-3 d-flex align-items-end">
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" id="email_auth_taken"
+                                   name="email_auth_taken" value="1"
+                                   {{ old('email_auth_taken') ? 'checked' : '' }}>
+                            <label class="form-check-label" for="email_auth_taken">Email Auth Taken</label>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Section 2: Customer Information -->
-        <div class="card">
-            <div class="card-header bg-info text-white">
-                <h3 class="card-title"><i class="fas fa-user mr-2"></i>Customer Information</h3>
-            </div>
+        {{-- 2. Customer Information --}}
+        <div class="card mb-4">
+            <div class="card-header"><strong>2. Customer Information</strong></div>
             <div class="card-body">
                 <div class="row">
-                    <div class="col-md-4">
-                        <div class="form-group">
-                            <label for="customer_name">Customer Name <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" id="customer_name" name="customer_name" 
-                                   value="{{ old('customer_name') }}" required>
-                        </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Customer Name <span class="text-danger">*</span></label>
+                        <input type="text" name="customer_name" class="form-control"
+                               value="{{ old('customer_name') }}" required>
                     </div>
 
-                    <div class="col-md-4">
-                        <div class="form-group">
-                            <label for="customer_email">Customer Email <span class="text-danger">*</span></label>
-                            <input type="email" class="form-control" id="customer_email" name="customer_email" 
-                                   value="{{ old('customer_email') }}" required>
-                        </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Customer Email <span class="text-danger">*</span></label>
+                        <input type="email" name="customer_email" class="form-control"
+                               value="{{ old('customer_email') }}" required>
                     </div>
 
-                    <div class="col-md-4">
-                        <div class="form-group">
-                            <label for="customer_phone">Customer Phone <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" id="customer_phone" name="customer_phone" 
-                                   value="{{ old('customer_phone') }}" required>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div class="col-md-4">
-                        <div class="form-group">
-                            <label for="billing_phone">Billing Phone <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" id="billing_phone" name="billing_phone" 
-                                   value="{{ old('billing_phone') }}" required>
-                        </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Customer Phone <span class="text-danger">*</span></label>
+                        <input type="text" name="customer_phone" class="form-control"
+                               value="{{ old('customer_phone') }}" required>
                     </div>
 
-                    <div class="col-md-8">
-                        <div class="form-group">
-                            <label for="billing_address">Billing Address <span class="text-danger">*</span></label>
-                            <textarea class="form-control" id="billing_address" name="billing_address" 
-                                      rows="2" required>{{ old('billing_address') }}</textarea>
-                        </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Billing Phone <span class="text-danger">*</span></label>
+                        <input type="text" name="billing_phone" id="main_billing_phone" class="form-control"
+                               value="{{ old('billing_phone') }}" required>
+                    </div>
+
+                    <div class="col-md-8 mb-3">
+                        <label class="form-label">Billing Address <span class="text-danger">*</span></label>
+                        <textarea name="billing_address" id="main_billing_address" class="form-control" rows="2" required>{{ old('billing_address') }}</textarea>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Section 3: Flight Details -->
-        @include('agent.bookings.partials.flight-detail')
+        {{-- 3. Flight Details --}}
+        <div class="card mb-4" id="flightDetailsCard">
+            <div class="card-header"><strong>3. Flight Details</strong></div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Flight Type <span class="text-danger">*</span></label>
+                        <select name="flight_type" id="flight_type" class="form-control">
+                            <option value="">Select Flight Type</option>
+                            <option value="oneway" {{ old('flight_type') == 'oneway' ? 'selected' : '' }}>One Way</option>
+                            <option value="roundtrip" {{ old('flight_type') == 'roundtrip' ? 'selected' : '' }}>Round Trip</option>
+                            <option value="multicity" {{ old('flight_type') == 'multicity' ? 'selected' : '' }}>Multi City</option>
+                        </select>
+                    </div>
 
-        <!-- Section 4: Passenger Details -->
-        <div class="card">
-            <div class="card-header bg-warning">
-                <h3 class="card-title"><i class="fas fa-users mr-2"></i>Passenger Details</h3>
-                <div class="card-tools">
-                    <div class="btn-group btn-group-sm">
-                        <button type="button" class="btn btn-light" id="adultsLabel">
-                            Adults: <span id="adultsCount">1</span>
-                        </button>
-                        <button type="button" class="btn btn-outline-dark" onclick="changePassengerCount('adults', -1)">-</button>
-                        <button type="button" class="btn btn-outline-dark" onclick="changePassengerCount('adults', 1)">+</button>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">GK PNR</label>
+                        <input type="text" name="gk_pnr" class="form-control" value="{{ old('gk_pnr') }}">
+                    </div>
 
-                        <button type="button" class="btn btn-light ml-2" id="childrenLabel">
-                            Children: <span id="childrenCount">0</span>
-                        </button>
-                        <button type="button" class="btn btn-outline-dark" onclick="changePassengerCount('children', -1)">-</button>
-                        <button type="button" class="btn btn-outline-dark" onclick="changePassengerCount('children', 1)">+</button>
-
-                        <button type="button" class="btn btn-light ml-2" id="infantsLabel">
-                            Infants: <span id="infantsCount">0</span>
-                        </button>
-                        <button type="button" class="btn btn-outline-dark" onclick="changePassengerCount('infants', -1)">-</button>
-                        <button type="button" class="btn btn-outline-dark" onclick="changePassengerCount('infants', 1)">+</button>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Airline PNR</label>
+                        <input type="text" name="airline_pnr" class="form-control" value="{{ old('airline_pnr') }}">
                     </div>
                 </div>
-            </div>
-            <div class="card-body">
-                <input type="hidden" name="adults" id="adults" value="1">
-                <input type="hidden" name="children" id="children" value="0">
-                <input type="hidden" name="infants" id="infants" value="0">
 
-                <div id="passengersContainer">
-                    <!-- Passengers will be dynamically added here -->
-                </div>
+                <div id="segments_container"></div>
 
-                <div class="alert alert-info mt-3" id="totalPassengersAlert">
-                    <i class="fas fa-info-circle"></i> Total Passengers: <strong><span id="totalPassengers">1</span></strong> (Maximum 9)
+                <div class="mt-2" id="add_segment_wrapper" style="display:none;">
+                    <button type="button" class="btn btn-outline-primary btn-sm" id="add_segment_btn">
+                        Add More Segment
+                    </button>
                 </div>
             </div>
         </div>
 
-        <!-- Section 5: Optional Services -->
-        <div class="card">
-            <div class="card-header bg-secondary text-white">
-                <h3 class="card-title"><i class="fas fa-concierge-bell mr-2"></i>Optional Services</h3>
-            </div>
+        {{-- 4. Passenger Details --}}
+        <div class="card mb-4">
+            <div class="card-header"><strong>4. Passenger Details</strong></div>
             <div class="card-body">
-                <!-- Hotel Service -->
-                <div class="custom-control custom-switch mb-3">
-                    <input type="checkbox" class="custom-control-input" id="hotel_required" 
-                           name="hotel_required" value="1" {{ old('hotel_required') ? 'checked' : '' }} 
-                           onchange="toggleService('hotel')">
-                    <label class="custom-control-label" for="hotel_required"><strong>Hotel Required</strong></label>
-                </div>
-
-                <div id="hotelSection" style="display: none;" class="border p-3 mb-4">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="hotel_name">Hotel Name <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" name="hotel[hotel_name]" value="{{ old('hotel.hotel_name') }}">
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="hotel_location">Hotel Location <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" name="hotel[hotel_location]" value="{{ old('hotel.hotel_location') }}">
-                            </div>
-                        </div>
+                <div class="row mb-3">
+                    <div class="col-md-2">
+                        <label>Adults</label>
+                        <input type="number" min="1" max="9" class="form-control passenger-counter" id="adults_count"
+                               name="adults" value="{{ old('adults', 1) }}">
                     </div>
-
-                    <div class="row">
-                        <div class="col-md-3">
-                            <div class="form-group">
-                                <label for="checkin_date">Check-in Date <span class="text-danger">*</span></label>
-                                <input type="date" class="form-control" name="hotel[checkin_date]" value="{{ old('hotel.checkin_date') }}">
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="form-group">
-                                <label for="checkout_date">Check-out Date <span class="text-danger">*</span></label>
-                                <input type="date" class="form-control" name="hotel[checkout_date]" value="{{ old('hotel.checkout_date') }}">
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="form-group">
-                                <label for="room_type">Room Type</label>
-                                <input type="text" class="form-control" name="hotel[room_type]" value="{{ old('hotel.room_type') }}" placeholder="e.g., Deluxe">
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="form-group">
-                                <label for="number_of_rooms">Number of Rooms</label>
-                                <input type="number" class="form-control" name="hotel[number_of_rooms]" value="{{ old('hotel.number_of_rooms', 1) }}" min="1">
-                            </div>
-                        </div>
+                    <div class="col-md-2">
+                        <label>Children</label>
+                        <input type="number" min="0" max="9" class="form-control passenger-counter" id="children_count"
+                               name="children" value="{{ old('children', 0) }}">
                     </div>
-
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="hotel_cost">Hotel Cost</label>
-                                <input type="number" step="0.01" class="form-control" name="hotel[hotel_cost]" value="{{ old('hotel.hotel_cost', 0) }}" min="0">
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="hotel_remarks">Hotel Remarks</label>
-                                <textarea class="form-control" name="hotel[hotel_remarks]" rows="2">{{ old('hotel.hotel_remarks') }}</textarea>
-                            </div>
+                    <div class="col-md-2">
+                        <label>Infants</label>
+                        <input type="number" min="0" max="9" class="form-control passenger-counter" id="infants_count"
+                               name="infants" value="{{ old('infants', 0) }}">
+                    </div>
+                    <div class="col-md-2">
+                        <label>Infant in Lap</label>
+                        <input type="number" min="0" max="9" class="form-control passenger-counter" id="infant_in_lap_count"
+                               name="infant_in_lap" value="{{ old('infant_in_lap', 0) }}">
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end">
+                        <div class="alert alert-info py-2 px-3 mb-0 w-100">
+                            Total Passengers: <strong id="total_passenger_display">1</strong> / 9
                         </div>
                     </div>
                 </div>
 
-                <!-- Cab Service -->
-                <div class="custom-control custom-switch mb-3">
-                    <input type="checkbox" class="custom-control-input" id="cab_required" 
-                           name="cab_required" value="1" {{ old('cab_required') ? 'checked' : '' }} 
-                           onchange="toggleService('cab')">
-                    <label class="custom-control-label" for="cab_required"><strong>Cab Required</strong></label>
+                <div id="passengers_container"></div>
+            </div>
+        </div>
+
+        {{-- 5. Payment Details --}}
+        <div class="card mb-4">
+            <div class="card-header"><strong>5. Payment Details</strong></div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Currency <span class="text-danger">*</span></label>
+                        <select name="currency" id="currency" class="form-control" required>
+                            <option value="">Select Currency</option>
+                            @foreach($currencies as $currency)
+                                <option value="{{ $currency }}"
+                                    {{ old('currency', 'USD') == $currency ? 'selected' : '' }}>
+                                    {{ $currency }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Amount Charged <span class="text-danger">*</span></label>
+                        <input type="number" step="0.01" min="0" name="amount_charged" id="amount_charged"
+                               class="form-control" value="{{ old('amount_charged') }}" required>
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Amount Paid to Airline <span class="text-danger">*</span></label>
+                        <input type="number" step="0.01" min="0" name="amount_paid_airline" id="amount_paid_airline"
+                               class="form-control" value="{{ old('amount_paid_airline') }}" required>
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Total MCO (Profit)</label>
+                        <input type="number" step="0.01" name="total_mco" id="total_mco"
+                               class="form-control" value="{{ old('total_mco') }}">
+                        <small class="text-muted">Auto = Amount Charged - Amount Paid to Airline</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- 6. Payment Processing --}}
+        <div class="card mb-4">
+            <div class="card-header"><strong>6. Payment Processing</strong></div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label d-block">Payment Type <span class="text-danger">*</span></label>
+
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input payment-type-radio" type="radio" name="payment_type"
+                               id="payment_type_full" value="full"
+                               {{ old('payment_type', 'full') == 'full' ? 'checked' : '' }}>
+                        <label class="form-check-label" for="payment_type_full">Full Payment</label>
+                    </div>
+
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input payment-type-radio" type="radio" name="payment_type"
+                               id="payment_type_split" value="split"
+                               {{ old('payment_type') == 'split' ? 'checked' : '' }}>
+                        <label class="form-check-label" for="payment_type_split">Split Payment</label>
+                    </div>
                 </div>
 
-                <div id="cabSection" style="display: none;" class="border p-3 mb-4">
-                    <div class="row">
-                        <div class="col-md-4">
-                            <div class="form-group">
-                                <label for="cab_type">Cab Type <span class="text-danger">*</span></label>
-                                <select class="form-control" name="cab[cab_type]">
-                                    <option value="pickup" {{ old('cab.cab_type') == 'pickup' ? 'selected' : '' }}>Pickup</option>
-                                    <option value="drop" {{ old('cab.cab_type') == 'drop' ? 'selected' : '' }}>Drop</option>
-                                    <option value="roundtrip" {{ old('cab.cab_type') == 'roundtrip' ? 'selected' : '' }}>Round Trip</option>
+                {{-- Full payment --}}
+                <div id="full_payment_block">
+                    <div class="border rounded p-3">
+                        <h6 class="mb-3">Agency Merchant Full Payment</h6>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label>Agency Merchant <span class="text-danger">*</span></label>
+                                <select name="full_payment[merchant_id]" class="form-control">
+                                    <option value="">Select Merchant</option>
+                                    @foreach($merchants as $merchant)
+                                        <option value="{{ $merchant->id }}"
+                                            {{ old('full_payment.merchant_id') == $merchant->id ? 'selected' : '' }}>
+                                            {{ $merchant->name }}
+                                        </option>
+                                    @endforeach
                                 </select>
                             </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="form-group">
-                                <label for="pickup_location">Pickup Location</label>
-                                <input type="text" class="form-control" name="cab[pickup_location]" value="{{ old('cab.pickup_location') }}">
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="form-group">
-                                <label for="drop_location">Drop Location</label>
-                                <input type="text" class="form-control" name="cab[drop_location]" value="{{ old('cab.drop_location') }}">
-                            </div>
-                        </div>
-                    </div>
 
-                    <div class="row">
-                        <div class="col-md-4">
-                            <div class="form-group">
-                                <label for="pickup_datetime">Pickup Date & Time</label>
-                                <input type="datetime-local" class="form-control" name="cab[pickup_datetime]" value="{{ old('cab.pickup_datetime') }}">
+                            <div class="col-md-4 mb-3">
+                                <label>Card Holder Name</label>
+                                <input type="text" name="full_payment[card_holder_name]" class="form-control"
+                                       value="{{ old('full_payment.card_holder_name') }}">
                             </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="form-group">
-                                <label for="cab_cost">Cab Cost</label>
-                                <input type="number" step="0.01" class="form-control" name="cab[cab_cost]" value="{{ old('cab.cab_cost', 0) }}" min="0">
+
+                            <div class="col-md-4 mb-3">
+                                <label>Card Number</label>
+                                <input type="text" name="full_payment[card_number]" class="form-control"
+                                       value="{{ old('full_payment.card_number') }}">
                             </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="form-group">
-                                <label for="cab_remarks">Cab Remarks</label>
-                                <textarea class="form-control" name="cab[cab_remarks]" rows="2">{{ old('cab.cab_remarks') }}</textarea>
+
+                            <div class="col-md-2 mb-3">
+                                <label>Card Type</label>
+                                <select name="full_payment[card_type]" class="form-control">
+                                    <option value="">Select</option>
+                                    @foreach(['VISA','MASTERCARD','AMEX','DISCOVER'] as $type)
+                                        <option value="{{ $type }}"
+                                            {{ old('full_payment.card_type') == $type ? 'selected' : '' }}>
+                                            {{ $type }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div class="col-md-2 mb-3">
+                                <label>Exp Month</label>
+                                <input type="text" name="full_payment[expiration_month]" class="form-control"
+                                       value="{{ old('full_payment.expiration_month') }}">
+                            </div>
+
+                            <div class="col-md-2 mb-3">
+                                <label>Exp Year</label>
+                                <input type="text" name="full_payment[expiration_year]" class="form-control"
+                                       value="{{ old('full_payment.expiration_year') }}">
+                            </div>
+
+                            <div class="col-md-2 mb-3">
+                                <label>CVV</label>
+                                <input type="text" name="full_payment[cvv]" class="form-control"
+                                       value="{{ old('full_payment.cvv') }}">
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <label>Charge Amount</label>
+                                <input type="number" step="0.01" min="0" name="full_payment[charge_amount]"
+                                       id="full_payment_charge_amount" class="form-control"
+                                       value="{{ old('full_payment.charge_amount') }}">
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <label>Billing Email</label>
+                                <input type="email" name="full_payment[billing_email]" class="form-control billing-email-sync"
+                                       value="{{ old('full_payment.billing_email', old('customer_email')) }}">
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <label>Billing Phone</label>
+                                <input type="text" name="full_payment[billing_phone]" class="form-control billing-phone-sync"
+                                       value="{{ old('full_payment.billing_phone', old('billing_phone')) }}">
+                            </div>
+
+                            <div class="col-md-12 mb-3">
+                                <label>Billing Address</label>
+                                <textarea name="full_payment[billing_address]" class="form-control billing-address-sync" rows="2">{{ old('full_payment.billing_address', old('billing_address')) }}</textarea>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Insurance Service -->
-                <div class="custom-control custom-switch mb-3">
-                    <input type="checkbox" class="custom-control-input" id="insurance_required" 
-                           name="insurance_required" value="1" {{ old('insurance_required') ? 'checked' : '' }} 
-                           onchange="toggleService('insurance')">
-                    <label class="custom-control-label" for="insurance_required"><strong>Insurance Required</strong></label>
-                </div>
+                {{-- Split payment --}}
+                <div id="split_payment_block" style="display:none;">
+                    <div class="border rounded p-3 mb-3">
+                        <h6 class="mb-3">Airline Payment</h6>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label>Airline Merchant Name <span class="text-danger">*</span></label>
+                                <input type="text" name="split_payment[airline_merchant_name]" class="form-control"
+                                       value="{{ old('split_payment.airline_merchant_name') }}">
+                            </div>
 
-                <div id="insuranceSection" style="display: none;" class="border p-3 mb-4">
-                    <div class="row">
-                        <div class="col-md-4">
-                            <div class="form-group">
-                                <label for="insurance_type">Insurance Type</label>
-                                <input type="text" class="form-control" name="insurance[insurance_type]" value="{{ old('insurance.insurance_type') }}" placeholder="e.g., Trip Cancellation">
+                            <div class="col-md-4 mb-3">
+                                <label>Card Holder Name</label>
+                                <input type="text" name="split_payment[airline][card_holder_name]" class="form-control"
+                                       value="{{ old('split_payment.airline.card_holder_name') }}">
                             </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="form-group">
-                                <label for="insurance_provider">Insurance Provider</label>
-                                <input type="text" class="form-control" name="insurance[insurance_provider]" value="{{ old('insurance.insurance_provider') }}">
+
+                            <div class="col-md-4 mb-3">
+                                <label>Card Number</label>
+                                <input type="text" name="split_payment[airline][card_number]" class="form-control"
+                                       value="{{ old('split_payment.airline.card_number') }}">
                             </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="form-group">
-                                <label for="coverage_amount">Coverage Amount</label>
-                                <input type="number" step="0.01" class="form-control" name="insurance[coverage_amount]" value="{{ old('insurance.coverage_amount', 0) }}" min="0">
+
+                            <div class="col-md-2 mb-3">
+                                <label>Card Type</label>
+                                <select name="split_payment[airline][card_type]" class="form-control">
+                                    <option value="">Select</option>
+                                    @foreach(['VISA','MASTERCARD','AMEX','DISCOVER'] as $type)
+                                        <option value="{{ $type }}"
+                                            {{ old('split_payment.airline.card_type') == $type ? 'selected' : '' }}>
+                                            {{ $type }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div class="col-md-2 mb-3">
+                                <label>Exp Month</label>
+                                <input type="text" name="split_payment[airline][expiration_month]" class="form-control"
+                                       value="{{ old('split_payment.airline.expiration_month') }}">
+                            </div>
+
+                            <div class="col-md-2 mb-3">
+                                <label>Exp Year</label>
+                                <input type="text" name="split_payment[airline][expiration_year]" class="form-control"
+                                       value="{{ old('split_payment.airline.expiration_year') }}">
+                            </div>
+
+                            <div class="col-md-2 mb-3">
+                                <label>CVV</label>
+                                <input type="text" name="split_payment[airline][cvv]" class="form-control"
+                                       value="{{ old('split_payment.airline.cvv') }}">
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <label>Charge Amount</label>
+                                <input type="number" step="0.01" min="0" name="split_payment[airline][charge_amount]"
+                                       id="split_airline_charge_amount" class="form-control"
+                                       value="{{ old('split_payment.airline.charge_amount') }}">
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <label>Billing Email</label>
+                                <input type="email" name="split_payment[airline][billing_email]" class="form-control billing-email-sync"
+                                       value="{{ old('split_payment.airline.billing_email', old('customer_email')) }}">
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <label>Billing Phone</label>
+                                <input type="text" name="split_payment[airline][billing_phone]" class="form-control billing-phone-sync"
+                                       value="{{ old('split_payment.airline.billing_phone', old('billing_phone')) }}">
+                            </div>
+
+                            <div class="col-md-12 mb-3">
+                                <label>Billing Address</label>
+                                <textarea name="split_payment[airline][billing_address]" class="form-control billing-address-sync" rows="2">{{ old('split_payment.airline.billing_address', old('billing_address')) }}</textarea>
                             </div>
                         </div>
                     </div>
 
-                    <div class="row">
-                        <div class="col-md-4">
-                            <div class="form-group">
-                                <label for="insurance_cost">Insurance Cost</label>
-                                <input type="number" step="0.01" class="form-control" name="insurance[insurance_cost]" value="{{ old('insurance.insurance_cost', 0) }}" min="0">
+                    <div class="border rounded p-3">
+                        <h6 class="mb-3">Agency Payment</h6>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label>Agency Merchant <span class="text-danger">*</span></label>
+                                <select name="split_payment[agency][merchant_id]" class="form-control">
+                                    <option value="">Select Merchant</option>
+                                    @foreach($merchants as $merchant)
+                                        <option value="{{ $merchant->id }}"
+                                            {{ old('split_payment.agency.merchant_id') == $merchant->id ? 'selected' : '' }}>
+                                            {{ $merchant->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
                             </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="form-group">
-                                <label for="policy_number">Policy Number</label>
-                                <input type="text" class="form-control" name="insurance[policy_number]" value="{{ old('insurance.policy_number') }}">
+
+                            <div class="col-md-4 mb-3">
+                                <label>Card Holder Name</label>
+                                <input type="text" name="split_payment[agency][card_holder_name]" class="form-control"
+                                       value="{{ old('split_payment.agency.card_holder_name') }}">
                             </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="form-group">
-                                <label for="insurance_remarks">Insurance Remarks</label>
-                                <textarea class="form-control" name="insurance[insurance_remarks]" rows="2">{{ old('insurance.insurance_remarks') }}</textarea>
+
+                            <div class="col-md-4 mb-3">
+                                <label>Card Number</label>
+                                <input type="text" name="split_payment[agency][card_number]" class="form-control"
+                                       value="{{ old('split_payment.agency.card_number') }}">
+                            </div>
+
+                            <div class="col-md-2 mb-3">
+                                <label>Card Type</label>
+                                <select name="split_payment[agency][card_type]" class="form-control">
+                                    <option value="">Select</option>
+                                    @foreach(['VISA','MASTERCARD','AMEX','DISCOVER'] as $type)
+                                        <option value="{{ $type }}"
+                                            {{ old('split_payment.agency.card_type') == $type ? 'selected' : '' }}>
+                                            {{ $type }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div class="col-md-2 mb-3">
+                                <label>Exp Month</label>
+                                <input type="text" name="split_payment[agency][expiration_month]" class="form-control"
+                                       value="{{ old('split_payment.agency.expiration_month') }}">
+                            </div>
+
+                            <div class="col-md-2 mb-3">
+                                <label>Exp Year</label>
+                                <input type="text" name="split_payment[agency][expiration_year]" class="form-control"
+                                       value="{{ old('split_payment.agency.expiration_year') }}">
+                            </div>
+
+                            <div class="col-md-2 mb-3">
+                                <label>CVV</label>
+                                <input type="text" name="split_payment[agency][cvv]" class="form-control"
+                                       value="{{ old('split_payment.agency.cvv') }}">
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <label>Charge Amount</label>
+                                <input type="number" step="0.01" min="0" name="split_payment[agency][charge_amount]"
+                                       id="split_agency_charge_amount" class="form-control"
+                                       value="{{ old('split_payment.agency.charge_amount') }}">
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <label>Billing Email</label>
+                                <input type="email" name="split_payment[agency][billing_email]" class="form-control billing-email-sync"
+                                       value="{{ old('split_payment.agency.billing_email', old('customer_email')) }}">
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <label>Billing Phone</label>
+                                <input type="text" name="split_payment[agency][billing_phone]" class="form-control billing-phone-sync"
+                                       value="{{ old('split_payment.agency.billing_phone', old('billing_phone')) }}">
+                            </div>
+
+                            <div class="col-md-12 mb-3">
+                                <label>Billing Address</label>
+                                <textarea name="split_payment[agency][billing_address]" class="form-control billing-address-sync" rows="2">{{ old('split_payment.agency.billing_address', old('billing_address')) }}</textarea>
                             </div>
                         </div>
                     </div>
@@ -394,201 +529,324 @@
             </div>
         </div>
 
-        <!-- Section 6: Payment Details -->
-        <div class="card mt-4">
-            <div class="card-header bg-success text-white">
-                <h3 class="card-title"><i class="fas fa-credit-card mr-2"></i>Payment Details</h3>
-            </div>
+        {{-- 7. Agent Remark --}}
+        <div class="card mb-4">
+            <div class="card-header"><strong>7. Agent Remark</strong></div>
             <div class="card-body">
-                @error('cards')
-                    <div class="alert alert-danger">{{ $message }}</div>
-                @enderror
-
-                <!-- ROW 1: Currency, Amount Charged, Amount Paid to Airline, Total MCO -->
-                <div class="row">
-                    <div class="col-md-3">
-                        <div class="form-group">
-                            <label>Currency <span class="text-danger">*</span></label>
-                            <select name="currency" class="form-control" required>
-                                <option value="USD" {{ old('currency', 'USD') == 'USD' ? 'selected' : '' }}>USD</option>
-                                <option value="EUR" {{ old('currency') == 'EUR' ? 'selected' : '' }}>EUR</option>
-                                <option value="GBP" {{ old('currency') == 'GBP' ? 'selected' : '' }}>GBP</option>
-                                <option value="AUD" {{ old('currency') == 'AUD' ? 'selected' : '' }}>AUD</option>
-                                <option value="CAD" {{ old('currency') == 'CAD' ? 'selected' : '' }}>CAD</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="col-md-3">
-                        <div class="form-group">
-                            <label>Amount Charged (Customer Pays) <span class="text-danger">*</span></label>
-                            <input type="number" id="amount_charged" name="amount_charged" class="form-control" 
-                                   step="0.01" min="0" value="{{ old('amount_charged') }}" required placeholder="0.00">
-                        </div>
-                    </div>
-
-                    <div class="col-md-3">
-                        <div class="form-group">
-                            <label>Amount Paid to Airline <span class="text-danger">*</span></label>
-                            <input type="number" id="amount_paid_airline" name="amount_paid_airline" class="form-control" 
-                                   step="0.01" min="0" value="{{ old('amount_paid_airline') }}" required placeholder="0.00">
-                        </div>
-                    </div>
-
-                    <div class="col-md-3">
-                        <div class="form-group">
-                            <label>Total MCO (Profit) <span class="text-danger">*</span></label>
-                            <input type="number" id="total_mco" name="total_mco" class="form-control" 
-                                   step="0.01" value="{{ old('total_mco') }}" placeholder="Enter MCO manually">
-                            <!-- Live MCO hint message -->
-                            <small id="mcohint" class="text-muted" style="display:none;">
-                                Suggested MCO: <strong id="mcosuggested" class="text-success">0.00</strong> 
-                                (Amount Charged - Amount Paid to Airline)
-                            </small>
-                        </div>
-                    </div>
-                </div>
-
-                <hr>
-
-                <!-- Payment Type Toggle -->
-                <div class="row mb-3">
-                    <div class="col-md-12">
-                        <label class="font-weight-bold">Payment Type <span class="text-danger">*</span></label>
-                        <div class="mt-1">
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="paymenttype" id="paymentfull" value="full" checked>
-                                <label class="form-check-label" for="paymentfull">
-                                    <i class="fas fa-credit-card mr-1"></i> Full Payment (Single Merchant)
-                                </label>
-                            </div>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="paymenttype" id="paymentsplit" value="split">
-                                <label class="form-check-label" for="paymentsplit">
-                                    <i class="fas fa-code-branch mr-1"></i> Split Payment (Multiple Merchants)
-                                </label>
-                            </div>
-                        </div>
-
-                        <div id="splitpaymentnote" class="alert alert-info mt-2 py-2" style="display:none;">
-                            <i class="fas fa-info-circle mr-1"></i> 
-                            <strong>Split Payment:</strong> Distribute the total across multiple merchants. 
-                            All card charge amounts must add up to <strong>Amount Charged</strong>.
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Cards Container -->
-                <div id="cardscontainer">
-                    <div class="card-item border rounded mb-3" id="cardblock0">
-                        <div class="bg-light px-3 py-2 d-flex justify-content-between align-items-center rounded-top">
-                            <strong><i class="fas fa-credit-card mr-2 text-success"></i>Card 1</strong>
-                            <button type="button" class="btn btn-sm btn-outline-danger remove-card-btn" style="display:none;" onclick="removeCard(0)">
-                                <i class="fas fa-trash"></i> Remove
-                            </button>
-                        </div>
-                        <div class="p-3">
-                            @include('agent.bookings.partials.card_row', ['index' => 0, 'merchants' => $merchants])
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Add Card Button (split only) -->
-                <div id="addcardbtnwrapper" style="display:none;" class="mb-3">
-                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="addCard()">
-                        <i class="fas fa-plus mr-1"></i> Add Another Card / Merchant
-                    </button>
-                </div>
-
-                <!-- Split Payment Total Validation Bar -->
-                <div id="cardtotalbar" class="p-2 border rounded bg-light mt-2" style="display:none;">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <span class="text-muted">Total Charged on All Cards:</span>
-                        <strong id="cardtotaldisplay" class="text-danger">0.00</strong>
-                    </div>
-                    <div class="d-flex justify-content-between align-items-center mt-1">
-                        <span class="text-muted">Amount Required (Amount Charged):</span>
-                        <strong id="requiredtotaldisplay">0.00</strong>
-                    </div>
-                    <div id="cardmatchmsg" class="mt-2"></div>
+                <div class="mb-3">
+                    <label class="form-label">Agent Remark</label>
+                    <textarea name="agent_remarks" class="form-control" rows="4">{{ old('agent_remarks') }}</textarea>
                 </div>
             </div>
         </div>
 
-        <!-- SECTION 7: AGENT REMARKS & SUBMIT -->
-        <div class="card mt-4">
-            <div class="card-header bg-dark text-white">
-                <h3 class="card-title">
-                    <i class="fas fa-sticky-note mr-2"></i>Agent Remarks & Submit
-                </h3>
-            </div>
-            <div class="card-body">
-                <div class="form-group">
-                    <label for="agent_remarks">Agent Remarks / Notes</label>
-                    <textarea name="agent_remarks" id="agent_remarks" class="form-control" rows="3" 
-                              placeholder="Any internal notes about this booking...">{{ old('agent_remarks') }}</textarea>
-                </div>
-
-                <hr>
-
-                <div class="d-flex justify-content-between align-items-center">
-                    <a href="{{ route('agent.bookings.index') }}" class="btn btn-secondary btn-lg">
-                        <i class="fas fa-arrow-left mr-2"></i>Cancel / Back
-                    </a>
-                    <button type="submit" class="btn btn-success btn-lg px-5">
-                        <i class="fas fa-check-circle mr-2"></i>Create Booking
-                    </button>
-                </div>
-
-                <!-- Hidden fallback to remind agent -->
-                @error('segments')
-                    <div class="alert alert-danger mt-3">
-                        <i class="fas fa-exclamation-triangle mr-1"></i> 
-                        Please select a <strong>Flight Type</strong> and fill at least one flight segment.
-                    </div>
-                @enderror
-            </div>
+        <div class="text-end mb-5">
+            <button type="submit" class="btn btn-success btn-lg">Create Booking</button>
         </div>
     </form>
 </div>
-
-@push('styles')
-<style>
-    .card-header { font-weight: 600; }
-    .passenger-card {
-        background-color: #f8f9fa;
-        border: 1px solid #dee2e6;
-        border-radius: 5px;
-        padding: 15px;
-        margin-bottom: 15px;
-    }
-    .passenger-card-header {
-        background-color: #007bff;
-        color: white;
-        padding: 8px 12px;
-        margin: -15px -15px 15px -15px;
-        border-radius: 4px 4px 0 0;
-        font-weight: 600;
-    }
-    .remove-card-btn {
-        float: right;
-        margin-top: -3px;
-    }
-    .card-number-input {
-        font-family: monospace;
-        font-size: 1.1em;
-        letter-spacing: 2px;
-    }
-</style>
-@endpush
-
-<script>
-    // Inject merchant options for JS to use when adding cards
-    window.merchantOptions = `
-        @foreach($merchants as $m)
-        <option value="{{ $m->id }}">{{ $m->name }}{{ $m->code ? ' ('.$m->code.')' : '' }} - {{ $m->currency }}</option>
-        @endforeach
-    `;
-</script>
-<script src="{{ asset('js/agent/booking-form.js') }}"></script>
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const flightType = document.getElementById('flight_type');
+    const segmentsContainer = document.getElementById('segments_container');
+    const addSegmentWrapper = document.getElementById('add_segment_wrapper');
+    const addSegmentBtn = document.getElementById('add_segment_btn');
+
+    const adultsCount = document.getElementById('adults_count');
+    const childrenCount = document.getElementById('children_count');
+    const infantsCount = document.getElementById('infants_count');
+    const infantInLapCount = document.getElementById('infant_in_lap_count');
+    const totalPassengerDisplay = document.getElementById('total_passenger_display');
+    const passengersContainer = document.getElementById('passengers_container');
+
+    const amountCharged = document.getElementById('amount_charged');
+    const amountPaidAirline = document.getElementById('amount_paid_airline');
+    const totalMco = document.getElementById('total_mco');
+
+    const paymentTypeRadios = document.querySelectorAll('.payment-type-radio');
+    const fullPaymentBlock = document.getElementById('full_payment_block');
+    const splitPaymentBlock = document.getElementById('split_payment_block');
+
+    let segmentIndex = 0;
+
+    function makeSegmentCard(index, showReturnDate = false, removable = false) {
+        return `
+            <div class="border rounded p-3 mb-3 segment-item">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="mb-0">Flight Segment ${index + 1}</h6>
+                    ${removable ? '<button type="button" class="btn btn-sm btn-outline-danger remove-segment-btn">Remove</button>' : ''}
+                </div>
+
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <label>From City <span class="text-danger">*</span></label>
+                        <input type="text" name="segments[${index}][from_city]" class="form-control" required>
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <label>To City <span class="text-danger">*</span></label>
+                        <input type="text" name="segments[${index}][to_city]" class="form-control" required>
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <label>Departure Date <span class="text-danger">*</span></label>
+                        <input type="date" name="segments[${index}][departure_date]" class="form-control" required>
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <label>Return Date ${showReturnDate ? '<span class="text-danger">*</span>' : ''}</label>
+                        <input type="date" name="segments[${index}][return_date]" class="form-control" ${showReturnDate ? 'required' : ''}>
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <label>Airline Name <span class="text-danger">*</span></label>
+                        <input type="text" name="segments[${index}][airline_name]" class="form-control" required>
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <label>Flight Number</label>
+                        <input type="text" name="segments[${index}][flight_number]" class="form-control">
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <label>Segment PNR</label>
+                        <input type="text" name="segments[${index}][segment_pnr]" class="form-control">
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <label>Cabin Class <span class="text-danger">*</span></label>
+                        <select name="segments[${index}][cabin_class]" class="form-control" required>
+                            <option value="">Select Cabin</option>
+                            <option value="economy">Economy</option>
+                            <option value="premium_economy">Premium Economy</option>
+                            <option value="business">Business</option>
+                            <option value="first">First</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    function buildSegments() {
+        const type = flightType.value;
+        segmentsContainer.innerHTML = '';
+        segmentIndex = 0;
+
+        if (!type) {
+            addSegmentWrapper.style.display = 'none';
+            return;
+        }
+
+        if (type === 'oneway') {
+            segmentsContainer.insertAdjacentHTML('beforeend', makeSegmentCard(segmentIndex, false, false));
+            segmentIndex++;
+            addSegmentWrapper.style.display = 'none';
+        } else if (type === 'roundtrip') {
+            segmentsContainer.insertAdjacentHTML('beforeend', makeSegmentCard(segmentIndex, true, false));
+            segmentIndex++;
+            segmentsContainer.insertAdjacentHTML('beforeend', makeSegmentCard(segmentIndex, false, false));
+            segmentIndex++;
+            addSegmentWrapper.style.display = 'none';
+        } else if (type === 'multicity') {
+            segmentsContainer.insertAdjacentHTML('beforeend', makeSegmentCard(segmentIndex, false, false));
+            segmentIndex++;
+            segmentsContainer.insertAdjacentHTML('beforeend', makeSegmentCard(segmentIndex, false, false));
+            segmentIndex++;
+            addSegmentWrapper.style.display = 'block';
+        }
+    }
+
+    function updatePassengerForms() {
+        const adults = parseInt(adultsCount.value || 0);
+        const children = parseInt(childrenCount.value || 0);
+        const infants = parseInt(infantsCount.value || 0);
+        const infantInLap = parseInt(infantInLapCount.value || 0);
+
+        const total = adults + children + infants + infantInLap;
+        totalPassengerDisplay.textContent = total;
+
+        passengersContainer.innerHTML = '';
+
+        let index = 0;
+
+        function addPassengerRows(count, typeCode, label) {
+            for (let i = 0; i < count; i++) {
+                passengersContainer.insertAdjacentHTML('beforeend', `
+                    <div class="border rounded p-3 mb-3">
+                        <h6>${label} ${i + 1}</h6>
+                        <input type="hidden" name="passengers[${index}][passenger_type]" value="${typeCode}">
+                        <div class="row">
+                            <div class="col-md-2 mb-3">
+                                <label>Title</label>
+                                <select name="passengers[${index}][title]" class="form-control" required>
+                                    <option value="Mr">Mr</option>
+                                    <option value="Mrs">Mrs</option>
+                                    <option value="Ms">Ms</option>
+                                    <option value="Miss">Miss</option>
+                                    <option value="Dr">Dr</option>
+                                    <option value="Master">Master</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-3 mb-3">
+                                <label>First Name</label>
+                                <input type="text" name="passengers[${index}][first_name]" class="form-control" required>
+                            </div>
+
+                            <div class="col-md-2 mb-3">
+                                <label>Middle Name</label>
+                                <input type="text" name="passengers[${index}][middle_name]" class="form-control">
+                            </div>
+
+                            <div class="col-md-3 mb-3">
+                                <label>Last Name</label>
+                                <input type="text" name="passengers[${index}][last_name]" class="form-control" required>
+                            </div>
+
+                            <div class="col-md-2 mb-3">
+                                <label>Gender</label>
+                                <select name="passengers[${index}][gender]" class="form-control" required>
+                                    <option value="male">Male</option>
+                                    <option value="female">Female</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-3 mb-3">
+                                <label>Date of Birth</label>
+                                <input type="date" name="passengers[${index}][dob]" class="form-control" required>
+                            </div>
+
+                            <div class="col-md-3 mb-3">
+                                <label>Passport Number</label>
+                                <input type="text" name="passengers[${index}][passport_number]" class="form-control">
+                            </div>
+
+                            <div class="col-md-3 mb-3">
+                                <label>Passport Expiry</label>
+                                <input type="date" name="passengers[${index}][passport_expiry]" class="form-control">
+                            </div>
+
+                            <div class="col-md-3 mb-3">
+                                <label>Nationality</label>
+                                <input type="text" name="passengers[${index}][nationality]" class="form-control">
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <label>Seat Preference</label>
+                                <input type="text" name="passengers[${index}][seat_preference]" class="form-control">
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <label>Meal Preference</label>
+                                <input type="text" name="passengers[${index}][meal_preference]" class="form-control">
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <label>Special Assistance</label>
+                                <input type="text" name="passengers[${index}][special_assistance]" class="form-control">
+                            </div>
+                        </div>
+                    </div>
+                `);
+                index++;
+            }
+        }
+
+        addPassengerRows(adults, 'ADT', 'Adult');
+        addPassengerRows(children, 'CHD', 'Child');
+        addPassengerRows(infants, 'INF', 'Infant');
+        addPassengerRows(infantInLap, 'INL', 'Infant In Lap');
+    }
+
+    function calculateMco() {
+        const charged = parseFloat(amountCharged.value || 0);
+        const paidAirline = parseFloat(amountPaidAirline.value || 0);
+        totalMco.value = (charged - paidAirline).toFixed(2);
+    }
+
+    function togglePaymentBlocks() {
+        const selected = document.querySelector('input[name="payment_type"]:checked')?.value;
+
+        if (selected === 'split') {
+            fullPaymentBlock.style.display = 'none';
+            splitPaymentBlock.style.display = 'block';
+        } else {
+            fullPaymentBlock.style.display = 'block';
+            splitPaymentBlock.style.display = 'none';
+        }
+    }
+
+    function syncBillingFields() {
+        const phone = document.getElementById('main_billing_phone').value;
+        const address = document.getElementById('main_billing_address').value;
+        const email = document.querySelector('input[name="customer_email"]').value;
+
+        document.querySelectorAll('.billing-phone-sync').forEach(el => {
+            if (!el.value) el.value = phone;
+        });
+
+        document.querySelectorAll('.billing-address-sync').forEach(el => {
+            if (!el.value) el.value = address;
+        });
+
+        document.querySelectorAll('.billing-email-sync').forEach(el => {
+            if (!el.value) el.value = email;
+        });
+    }
+
+    flightType.addEventListener('change', buildSegments);
+
+    addSegmentBtn.addEventListener('click', function () {
+        const currentCount = segmentsContainer.querySelectorAll('.segment-item').length;
+        if (currentCount >= 10) {
+            alert('Maximum 10 flight segments are allowed for multi city booking.');
+            return;
+        }
+
+        segmentsContainer.insertAdjacentHTML('beforeend', makeSegmentCard(segmentIndex, false, true));
+        segmentIndex++;
+    });
+
+    segmentsContainer.addEventListener('click', function (e) {
+        if (e.target.classList.contains('remove-segment-btn')) {
+            const items = segmentsContainer.querySelectorAll('.segment-item');
+            if (items.length > 2) {
+                e.target.closest('.segment-item').remove();
+            } else {
+                alert('At least 2 flight segments are required for multi city booking.');
+            }
+        }
+    });
+
+    [adultsCount, childrenCount, infantsCount, infantInLapCount].forEach(input => {
+        input.addEventListener('input', updatePassengerForms);
+    });
+
+    amountCharged.addEventListener('input', function () {
+        calculateMco();
+        document.getElementById('full_payment_charge_amount').value = this.value;
+    });
+
+    amountPaidAirline.addEventListener('input', calculateMco);
+
+    paymentTypeRadios.forEach(radio => {
+        radio.addEventListener('change', togglePaymentBlocks);
+    });
+
+    document.getElementById('main_billing_phone').addEventListener('blur', syncBillingFields);
+    document.getElementById('main_billing_address').addEventListener('blur', syncBillingFields);
+    document.querySelector('input[name="customer_email"]').addEventListener('blur', syncBillingFields);
+
+    buildSegments();
+    updatePassengerForms();
+    calculateMco();
+    togglePaymentBlocks();
+    syncBillingFields();
+});
+</script>
+@endpush

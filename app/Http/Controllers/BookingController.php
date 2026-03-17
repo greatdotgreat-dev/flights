@@ -44,11 +44,11 @@ class BookingController extends Controller
         return view('agent.bookings.create', compact('callTypes', 'merchants'));
     }
 
-    // AGENT: Store (your full logic from Agent/BookingController.php)[file:61]
+    // AGENT: Store 
 public function agentStore(Request $request) {
 
     $validated = $request->validate([
-        'calltype' => 'required|string|exists:call_types,name',  // Match your CallType model
+        'calltype' => 'required|string|exists:call_types,name', 
         'serviceprovided' => 'required|string|in:Flight,Hotel,Package',
         'servicetype' => 'required|string|in:New Booking,Modification,Cancellation',
         'bookingportal' => 'required|string|in:amadeus,sabre,worldspan,gds,website',
@@ -73,7 +73,6 @@ public function agentStore(Request $request) {
         'passengers' => 'array|min:1',
         // Hotel/Cab/Insurance conditional
         'hotelrequired' => 'boolean',
-        // ... expand as needed
     ]);
 
     DB::beginTransaction();
@@ -138,16 +137,7 @@ public function chargeShow(Booking $booking)
 
 
 
-    // AGENT: Charge form
-    public function chargeByAgent(Booking $booking)
-    {
-        if ($booking->user_id !== auth()->id() || $booking->status !== 'pending') {
-            abort(403);
-        }
-        $merchants = Merchant::where('is_active', true)->get();
 
-        return view('agent.charging.charge', compact('booking', 'merchants'));
-    }
 
     // ADMIN/MIS: List all/filter (from AdminBookingsController)
     public function adminIndex(Request $request)
@@ -193,47 +183,45 @@ public function chargeShow(Booking $booking)
     }
 
     // assign bookings to charging team
-    public function assignForCharging(Request $request, Booking $booking)
-    {
-        if ($booking->user_id !== auth()->id()) {
-            abort(403);
-        }
-
-        if ($booking->status !== 'pending') {
-            return back()->with('error', 'This booking is already assigned to the charging team (Status: '.$booking->status.').');
-        }
-
-        $request->validate([
-            'merchant' => 'required|exists:merchants,id',
-        ]);
-
-        $merchant = Merchant::findOrFail($request->merchant);
-
-        // Find a random charge user
-        $charger = User::where('role', 'charge')->inRandomOrder()->first();
-
-        if (! $charger) {
-            return back()->withErrors(['merchant' => 'No charging team member is available!']);
-        }
-
-        // Create assignment record
-        $assignment = ChargeAssignment::create([
-            'booking_id' => $booking->id,
-            'charger_id' => $charger->id,
-            'agent_id' => auth()->id(),
-            'merchant_id' => $merchant->id,
-            'status' => 'pending',
-            'assigned_at' => now(),
-        ]);
-
-        // Update booking status
-        $booking->update([
-            'status' => 'assigned_to_charging',
-            'merchant_name' => $merchant->name,
-        ]);
-
-        // Optionally, we could store assignment id in booking if needed, but not necessary.
-
-        return back()->with('success', 'Booking sent to '.$charger->name.' for charging.');
+public function assignForCharging(Request $request, Booking $booking)
+{
+    if ($booking->user_id !== auth()->id()) {
+        abort(403);
     }
+
+    if ($booking->status !== 'pending') {
+        return back()->with('error', 'This booking is already assigned to the charging team (Status: '.$booking->status.').');
+    }
+
+    $request->validate([
+        'merchant' => 'required|exists:merchants,id',
+    ]);
+
+    $merchant = Merchant::findOrFail($request->merchant);
+
+    // Find a random charge user
+    $charger = User::where('role', 'charge')->inRandomOrder()->first();
+
+    if (! $charger) {
+        return back()->withErrors(['merchant' => 'No charging team member is available!']);
+    }
+
+    // Create assignment record
+    $assignment = ChargeAssignment::create([
+        'booking_id' => $booking->id,
+        'charger_id' => $charger->id,
+        'agent_id' => auth()->id(),
+        'merchant_id' => $merchant->id,
+        'status' => 'pending',
+        'assigned_at' => now(),
+    ]);
+
+    // Update booking status only - REMOVE merchant_name
+    $booking->update([
+        'status' => 'assigned_to_charging',
+        // 'merchant_name' => $merchant->name,  // ← REMOVE THIS LINE
+    ]);
+
+    return back()->with('success', 'Booking sent to '.$charger->name.' for charging.');
+}
 }

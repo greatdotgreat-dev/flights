@@ -66,9 +66,26 @@ table#bookingsTable tr td span {
     font-weight: 500;
     line-height: 1.5;
 }
-[class*=sidebar-dark-] .nav-treeview>.nav-item>.nav-link.active, [class*=sidebar-dark-] .nav-treeview>.nav-item>.nav-link.active:focus, [class*=sidebar-dark-] .nav-treeview>.nav-item>.nav-link.active:hover {
+[class*="sidebar-dark-"] .nav-treeview > .nav-item > .nav-link.active,
+[class*="sidebar-dark-"] .nav-treeview > .nav-item > .nav-link.active:focus,
+[class*="sidebar-dark-"] .nav-treeview > .nav-item > .nav-link.active:hover {
     background-color: transparent;
 }
-.btn-primary{
+.btn-primary {
     color: #fff;
+}
+.table-hover .table-dark:hover {
+    background-color: #000;
+}
+badge.badge-ticketed {
+    color: #fff;
+    background-color: #3c8dbc;
+    min-width: 90px;
+    min-height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 90px;
+    border-right: 6px double #fff;
+    border-left: 3px dotted #fff;
 }

@@ -2,12 +2,29 @@
 // resources/views/agent/bookings/partials/card_row.blade.php
 // $index and $merchants must be passed
 ?>
-<div class="row card-row">
-    {{-- Merchant --}}
+<div class="row card-row" data-index="{{ $index }}">
+
+    {{-- Card role (single | airline | agency) --}}
+    <input type="hidden"
+           name="cards[{{ $index }}][card_role]"
+           class="card-role-input"
+           value="{{ old('cards.'.$index.'.card_role', $index == 0 ? 'single' : 'single') }}">
+
+    {{-- Merchant / Airline --}}
     <div class="col-md-4">
         <div class="form-group">
             <label>Merchant / Payment Gateway <span class="text-danger">*</span></label>
-            <select name="cards[{{ $index }}][merchant_id]" class="form-control merchant-select">
+
+            {{-- Airline merchant name (used only for airline card in split mode) --}}
+            <input type="text"
+                   name="cards[{{ $index }}][airline_merchant_name]"
+                   class="form-control airline-merchant-input d-none"
+                   placeholder="Enter Airline Merchant Name"
+                   value="{{ old('cards.'.$index.'.airline_merchant_name') }}">
+
+            {{-- Existing merchant dropdown (used for single payment and agency cards) --}}
+            <select name="cards[{{ $index }}][merchant_id]"
+                    class="form-control merchant-select">
                 <option value="">-- Select Merchant --</option>
                 @foreach($merchants as $merchant)
                     <option value="{{ $merchant->id }}"
@@ -19,12 +36,13 @@
                 @endforeach
                 <option value="__new__">+ Add new merchant</option>
             </select>
+
             @error("cards.$index.merchant_id")
                 <small class="text-danger">{{ $message }}</small>
             @enderror
         </div>
 
-        {{-- New merchant name (shown only when needed) --}}
+        {{-- New merchant name (shown only when "__new__" is selected) --}}
         <div class="form-group new-merchant-wrapper d-none">
             <label>New merchant name</label>
             <input type="text"
@@ -173,12 +191,11 @@
 <script>
     // Toggle "new merchant" field for each card row
     $(document).on('change', '.merchant-select', function () {
-        const $row = $(this).closest('.card-row'); // matches the div.card-row we added
+        const $row     = $(this).closest('.card-row');
         const $wrapper = $row.find('.new-merchant-wrapper');
-        const $input = $row.find('.new-merchant-input');
+        const $input   = $row.find('.new-merchant-input');
 
         if ($(this).val() === '__new__') {
-            // Clear the select so "__new__" is not submitted
             $(this).val('');
             $wrapper.removeClass('d-none');
             $input.focus();
@@ -188,8 +205,48 @@
         }
     });
 
-    // If you clone card rows in JS, just make sure the cloned HTML keeps:
-    // - .card-row, .merchant-select, .new-merchant-wrapper, .new-merchant-input
-    // and updates the [index] in the name="cards[index][...]" attributes as you already do.
+    // Apply payment type UI (single / split) and card roles
+    function applyPaymentTypeUI() {
+        const paymentType = $('input[name="payment_type"]:checked').val() || 'single';
+
+        $('.card-row[data-index]').each(function () {
+            const idx            = parseInt($(this).data('index'), 10);
+            const $row           = $(this);
+            const $roleInput     = $row.find('.card-role-input');
+            const $airlineInput  = $row.find('.airline-merchant-input');
+            const $merchantSelect= $row.find('.merchant-select');
+
+            if (! $roleInput.length || !$airlineInput.length || !$merchantSelect.length) return;
+
+            if (paymentType === 'single') {
+                // Single merchant mode: old behaviour
+                $roleInput.val('single');
+                $airlineInput.addClass('d-none').prop('required', false).val('');
+                $merchantSelect.removeClass('d-none').prop('required', true);
+            } else {
+                // Split payment (airline + agency)
+                if (idx === 0) {
+                    // Card 1 = airline
+                    $roleInput.val('airline');
+                    $airlineInput.removeClass('d-none').prop('required', true);
+                    $merchantSelect.addClass('d-none').prop('required', false).val('');
+                } else {
+                    // Card 2+ = agency
+                    $roleInput.val('agency');
+                    $airlineInput.addClass('d-none').prop('required', false).val('');
+                    $merchantSelect.removeClass('d-none').prop('required', true);
+                }
+            }
+        });
+    }
+
+    $(document).on('change', 'input[name="payment_type"]', applyPaymentTypeUI);
+
+    // If you dynamically add card rows, call applyPaymentTypeUI() after append
+    window.applyPaymentTypeUI = applyPaymentTypeUI;
+
+    $(document).ready(function () {
+        applyPaymentTypeUI();
+    });
 </script>
 @endpush

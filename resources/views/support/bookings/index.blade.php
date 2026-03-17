@@ -119,4 +119,6 @@
         {{ $bookings->links() }}
     </div>
 </div>
+    @include('support.bookings.components.booking_status', ['booking' => $booking])
+
 @endsection

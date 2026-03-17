@@ -1,6 +1,6 @@
 @extends('layouts.support')
 
-@section('title', 'All Bookings')
+@section('title', 'Travelomile ! All Bookings')
 
 @section('content')
 <div class="container-fluid py-4">
@@ -64,7 +64,7 @@
                         <label class="form-label fw-semibold text-muted mb-2">
                             <i class="fas fa-tag me-1"></i> Status
                         </label>
-                        <select name="status" class="form-select shadow-sm">
+                        <select name="status" class="form-select form-control shadow-sm">
                             <option value="">All Statuses</option>
                             <option value="pending" {{ request('status')=='pending' ? 'selected' : '' }}>Pending
                             </option>
@@ -80,7 +80,7 @@
                         <label class="form-label fw-semibold text-muted mb-2">
                             <i class="fas fa-concierge-bell me-1"></i> Service
                         </label>
-                        <select name="service" class="form-select shadow-sm">
+                        <select name="service" class="form-select form-control shadow-sm">
                             <option value="">All Services</option>
                             <option value="Flight" {{ request('service')=='Flight' ? 'selected' : '' }}>Flight</option>
                             <option value="Hotel" {{ request('service')=='Hotel' ? 'selected' : '' }}>Hotel</option>
@@ -93,7 +93,7 @@
                         <label class="form-label fw-semibold text-muted mb-2">
                             <i class="fas fa-user-tie me-1"></i> Agent
                         </label>
-                        <select name="agent_id" class="form-select shadow-sm">
+                        <select name="agent_id" class="form-select form-control shadow-sm">
                             <option value="">All Agents</option>
                             @foreach($agents as $agent)
                             <option value="{{ $agent->id }}" {{ request('agent_id')==$agent->id ? 'selected' : '' }}>
@@ -193,7 +193,6 @@
     </div>
 
     <!-- Bookings Table -->
-    <!-- Bookings Table -->
     <div class="card shadow-sm">
         <div class="card-body p-0">
             <div class="table-responsive">
@@ -283,7 +282,7 @@
                             </td>
 
 
-
+                            
                             <!-- 9. Action btn - change status, view booking -->
                             <td>
                                 <div class="btn-group" role="group">
@@ -299,7 +298,6 @@
                                 </div>
                             </td>
                         </tr>
-
                         @empty
                         <tr>
                             <td colspan="10" class="text-center py-5 text-muted">
@@ -309,13 +307,12 @@
                         </tr>
                         <!-- Include the status modal component -->
                         @endforelse
+                        @include('support.bookings.components.booking_status', ['booking' => $booking])
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
-    @include('support.bookings.components.booking_status', ['booking' => $booking])
-
 
     <!-- Pagination -->
     <div class="mt-4 d-flex justify-content-between align-items-center">

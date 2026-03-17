@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'All Bookings')
+@section('title', 'All Bookings of flight')
 
 @section('content')
 <div class="container-fluid py-4">
@@ -148,6 +148,7 @@
                                 </td>
                                 <td>{{ \Carbon\Carbon::parse($booking->booking_date)->format('d M Y') }}</td>
                                 <td>
+                                    <div>{{ $booking->customer_name }}</div>
                                     <div>{{ $booking->customer_email }}</div>
                                     <small class="text-muted">{{ $booking->customer_phone }}</small>
                                 </td>
@@ -159,7 +160,7 @@
                                     @if($booking->segments->count() > 0)
                                         @foreach($booking->segments->take(2) as $segment)
                                             <div class="text-nowrap">
-                                                {{ $segment->from_airport }} → {{ $segment->to_airport }}
+                                                {{ $segment->from_city }} → {{ $segment->to_city }}
                                             </div>
                                         @endforeach
                                         @if($booking->segments->count() > 2)

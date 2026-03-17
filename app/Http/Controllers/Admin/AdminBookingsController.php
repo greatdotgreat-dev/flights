@@ -65,10 +65,8 @@ class AdminBookingsController extends Controller
     public function index(Request $request)
     {
         $agentId = $request->query('agent_id');
-        
         // Get the agent details
         $agent = User::findOrFail($agentId);
-        
         // Fetch bookings with relationships
         $bookings = Booking::with(['passengers', 'segments', 'user'])
             ->where('user_id', $agentId)
@@ -103,24 +101,27 @@ class AdminBookingsController extends Controller
     /**
      * Update booking
      */
+    
     public function update(Request $request, $id)
+
     {
-        $booking = Booking::findOrFail($id);
-        
-        $validated = $request->validate([
-            'status' => 'required|in:pending,charged,refunded',
-            'mis_remarks' => 'nullable|string',
-            'amount_charged' => 'required|numeric',
-            'amount_paid_airline' => 'required|numeric',
-            'total_mco' => 'required|numeric',
-        ]);
-        
-        $booking->update($validated);
-        
-        return redirect()
-            ->route('admin.bookings.index', ['agent_id' => $booking->user_id])
-            ->with('success', 'Booking updated successfully!');
+            $booking = Booking::findOrFail($id);
+
+            $validated = $request->validate([
+                'status' => 'required|in:pending,assigned_to_charging,auth_email_sent,payment_processing,confirmed,ticketed,failed,cancelled,hold,refund,charging_in_progress,Alert,RDR,retrieval,chargeback,charged',
+                'mis_remarks' => 'nullable|string',
+                'amount_charged' => 'required|numeric',
+                'amount_paid_airline' => 'required|numeric',
+                'total_mco' => 'required|numeric',
+            ]);
+
+            $booking->update($validated);
+
+            return redirect()
+                ->route('admin.bookings.index', ['agent_id' => $booking->user_id])
+                ->with('success', 'Booking updated successfully!');
     }
+
 
     /**
      * Delete booking

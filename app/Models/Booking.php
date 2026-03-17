@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 class Booking extends Model
 {
     use HasFactory;
-
+ protected $appends = ['badge_class'];
 
   protected $fillable = [
     
@@ -143,6 +143,11 @@ class Booking extends Model
     {
         return $this->hasOne(BookingInsurance::class);
     }
+    public function flightSegments()
+{
+    return $this->hasMany(\App\Models\FlightSegment::class);
+}
+
 
     // Accessors
     public function getTotalChargedAttribute(): float
@@ -184,6 +189,14 @@ class Booking extends Model
     public function getCvvAttribute($value)
     {
         return $value ? decrypt($value) : null;
+    }
+
+    public function getBadgeClassAttribute()
+    {
+        // When status is 'ticketed' we want the badge-ticketed classes
+        return $this->status === 'ticketed'
+            ? 'badge badge-ticketed'
+            : ''; // empty string – no badge for other statuses
     }
 
 }

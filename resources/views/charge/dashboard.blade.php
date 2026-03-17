@@ -1,59 +1,59 @@
 @extends('layouts.charging')
 @section('content')
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header bg-primary text-white">
+<div @class(['container-fluid'])>
+    <div @class(['row'])>
+        <div @class(['col-12'])>
+            <div @class(['card'])>
+                <div @class(['card-header', 'bg-primary', 'text-white'])>
                     <h4>Charging Dashboard</h4>
                 </div>
-                <div class="card-body">
+                <div @class(['card-body'])>
                     @if(session('success'))
-                    <div class="alert alert-success">{{ session('success') }}</div>
+                    <div @class(['alert', 'alert-success'])>{{ session('success') }}</div>
                     @endif
                     @if(session('info'))
-                    <div class="alert alert-info">{{ session('info') }}</div>
+                    <div @class(['alert', 'alert-info'])>{{ session('info') }}</div>
                     @endif
 
-                    <div class="row mb-4">
-                        <div class="col-md-3">
-                            <div class="small-box bg-info">
-                                <div class="inner">
+                    <div @class(['row', 'mb-4'])>
+                        <div @class(['col-md-3'])>
+                            <div @class(['small-box', 'bg-info'])>
+                                <div @class(['inner'])>
                                     <h3>{{ $pendingCount }}</h3>
                                     <p>Pending Assignments</p>
                                 </div>
-                                <div class="icon"><i class="fas fa-clock"></i></div>
+                                <div @class(['icon'])><i @class(['fas', 'fa-clock'])></i></div>
                             </div>
                         </div>
                     </div>
 
                     @if($latestPending)
-                    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                    <div @class(['alert', 'alert-warning', 'alert-dismissible', 'fade', 'show']) role="alert">
                         <strong>New Assignment!</strong>
                         Booking #{{ $latestPending->booking->booking_reference }}
                         from {{ $latestPending->agent->name }}
                         ({{ $latestPending->booking->customer_name }})
                         - Amount: ${{ number_format($latestPending->booking->amount_charged, 2) }}
-                        <div class="mt-2">
+                        <div @class(['mt-2'])>
                             <a href="{{ route('charge.assignments.details', $latestPending) }}"
-                                class="btn btn-sm btn-primary">View Details</a>
+                                @class(['btn', 'btn-sm', 'btn-primary'])>View Details</a>
                             <form action="{{ route('charge.assignments.accept', $latestPending) }}" method="POST"
-                                class="d-inline">
+                                @class(['d-inline'])>
                                 @csrf
-                                <button type="submit" class="btn btn-sm btn-success">Accept</button>
+                                <button type="submit" @class(['btn', 'btn-sm', 'btn-success'])>Accept</button>
                             </form>
                             <form action="{{ route('charge.assignments.reject', $latestPending) }}" method="POST"
-                                class="d-inline">
+                                @class(['d-inline'])>
                                 @csrf
-                                <button type="submit" class="btn btn-sm btn-danger">Reject</button>
+                                <button type="submit" @class(['btn', 'btn-sm', 'btn-danger'])>Reject</button>
                             </form>
                         </div>
-                        <button type="button" class="close" data-dismiss="alert">&times;</button>
+                        <button type="button" @class(['close']) data-dismiss="alert">&times;</button>
                     </div>
                     @endif
                     <h5>All Assignments</h5>
-                    <div class="card-body table-responsive p-0">
-                        <table class="table table-hover text-nowrap mb-0">
+                    <div @class(['card-body', 'table-responsive', 'p-0'])>
+                        <table @class(['table', 'table-hover', 'text-nowrap', 'mb-0'])>
                             <thead>
                                 <tr>
                                     <th>Booking Ref</th>
@@ -81,69 +81,86 @@
                                     <td>{{ $assign->agent->name }}</td>
                                     <td>
                                         @if($assign->status === 'pending')
-                                        <span class="badge badge-warning">Pending</span>
+                                        <span @class(['badge', 'badge-warning'])>Pending</span>
                                         @elseif($assign->status === 'accepted')
-                                        <span class="badge badge-success">Accepted</span>
+                                        <span @class(['badge', 'badge-success'])>Accepted</span>
                                         @elseif($assign->status === 'rejected')
-                                        <span class="badge badge-danger">Rejected</span>
+                                        <span @class(['badge', 'badge-danger'])>Rejected</span>
                                         @else
-                                        <span class="badge badge-secondary">{{ ucfirst($assign->status) }}</span>
+                                        <span @class(['badge', 'badge-secondary'])>{{ ucfirst($assign->status) }}</span>
                                         @endif
                                     </td>
                                     <td>{{ $assign->assigned_at->format('d M Y H:i') }}</td>
                                     <td>
-                                        @if($authSent)
-                                        <span class="badge badge-info">Auth Mail Sent</span>
-                                        @else
-                                        <span class="badge badge-secondary">Pending Auth</span>
-                                        @endif
+                                        <span @class(['badge', 'badge-info', 'small'])>{{ $booking->status }}</span>
                                     </td>
-                                    <td>
-                                        <a href="{{ route('charge.assignments.details', $assign) }}"
-                                            class="btn btn-sm btn-primary">
-                                            Details
-                                        </a>
+                                    @php
+    $resendAllowedStatuses = [
+        'pending',
+        'assigned_to_charging',
+        'auth_email_sent',
+        'payment_processing',
+    ];
 
-                                        @if(!$authSent)
-                                        <a href="{{ route('charge.authorize.edit', $assign->booking->id) }}"
-                                            class="btn btn-sm btn-success">
-                                            Get Auth
-                                        </a>
-                                        @else
-                                        <a href="{{ route('charge.authorize.edit', $assign->booking->id) }}"
-                                            class="btn btn-sm btn-warning">
-                                            Resend Auth Mail
-                                        </a>
-                                        @endif
+    $canShowAuthButton = in_array($assign->booking->status, $resendAllowedStatuses);
+@endphp
+<td>
+    <a href="{{ route('charge.assignments.details', $assign) }}"
+        @class(['btn', 'btn-sm', 'btn-primary'])>
+        Details
+    </a>
 
-                                        @if(in_array($assign->booking->status, ['auth_email_sent', 'payment_processing',
-                                        'charging_in_progress', 'confirmed', 'ticketed', 'failed', 'cancelled', 'hold',
-                                        'refund']))
-                                        <button type="button" class="btn btn-sm btn-info" data-toggle="modal"
-                                            data-target="#changeStatusModal"
-                                            data-booking-id="{{ $assign->booking->id }}"
-                                            data-booking-ref="{{ $assign->booking->booking_reference }}"
-                                            data-current-status="{{ $assign->booking->status }}">
-                                            Change Status
-                                        </button>
-                                        @endif
-                                    </td>
+    @if(!$authSent && in_array($assign->booking->status, ['pending', 'assigned_to_charging']))
+        <a href="{{ route('charge.authorize.edit', $assign->booking->id) }}"
+            @class(['btn', 'btn-sm', 'btn-success'])>
+            Get Auth
+        </a>
+    @endif
+
+    @if($authSent && in_array($assign->booking->status, ['auth_email_sent', 'payment_processing']))
+        <a href="{{ route('charge.authorize.edit', $assign->booking->id) }}"
+            @class(['btn', 'btn-sm', 'btn-warning'])>
+            Resend Auth Mail
+        </a>
+    @endif
+
+    @if(in_array($assign->booking->status, [
+        'auth_email_sent',
+        'payment_processing',
+        'charging_in_progress',
+        'confirmed',
+        'ticketed',
+        'failed',
+        'cancelled',
+        'hold',
+        'refund'
+    ]))
+        <button type="button" @class(['btn', 'btn-sm', 'btn-info']) data-toggle="modal"
+            data-target="#changeStatusModal"
+            data-booking-id="{{ $assign->booking->id }}"
+            data-booking-ref="{{ $assign->booking->booking_reference }}"
+            data-current-status="{{ $assign->booking->status }}">
+            Change Status
+        </button>
+    @endif
+</td>
+
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="8" class="text-center">No assignments found</td>
+                                    <td colspan="8" @class(['text-center'])>No assignments found</td>
                                 </tr>
                                 @endforelse
                             </tbody>
                         </table>
 
                         {{-- Pagination Links --}}
-                        <div class="d-flex justify-content-between align-items-center p-3">
-                            <div class="text-muted">
+                        <div @class(['d-flex', 'justify-content-between', 'align-items-center', 'p-3'])>
+                            <div @class(['text-muted'])>
                                 Showing {{ $assignments->firstItem() ?? 0 }} to {{ $assignments->lastItem() ?? 0 }} of
                                 {{ $assignments->total() }} results
                             </div>
-                            <div class="pagination-wrapper">
+                            <div @class(['pagination-wrapper'])>
                                 {{ $assignments->links() }}
                             </div>
                         </div>

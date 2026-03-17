@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Booking #' . $booking->id)
+@section('title', 'Booking of ' . $booking->customer_name )
 
 @section('content')
 <div class="container py-4">
@@ -48,7 +48,7 @@
                     <p><strong>Phone:</strong> {{ $booking->customer_phone }}</p>
                     <p><strong>Billing Phone:</strong> {{ $booking->billing_phone }}</p>
                     <p><strong>Flight Type:</strong> {{ $booking->flight_type }}</p>
-                    <p><strong>Cabin Type:</strong> {{ $booking->cabin_type }}</p>
+                    <p><strong>Cabin Type:</strong> {{ $booking->cabin_class }}</p>
                 </div>
             </div>
         </div>
@@ -68,17 +68,17 @@
                             <th>To</th>
                             <th>Departure Date</th>
                             <th>PNR</th>
-                            <th>Airline</th>
+                            <th>Flight number</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach($booking->segments as $segment)
                             <tr>
-                                <td>{{ $segment->from_airport }}</td>
-                                <td>{{ $segment->to_airport }}</td>
+                                <td>{{ $segment->from_city }}</td>
+                                <td>{{ $segment->to_city }}</td>
                                 <td>{{ $segment->departure_date->format('d M Y') }}</td>
                                 <td>{{ $segment->pnr ?? 'N/A' }}</td>
-                                <td>{{ $segment->airline_code }}</td>
+                                <td>{{ $segment->flight_number }}</td>
                             </tr>
                         @endforeach
                     </tbody>
@@ -111,7 +111,7 @@
                                 <td>{{ $passenger->middle_name ?? '-' }}</td>
                                 <td>{{ $passenger->last_name }}</td>
                                 <td>{{ $passenger->dob->format('d M Y') }}</td>
-                                <td>{{ $passenger->sex }}</td>
+                                <td>{{ $passenger->gender }}</td>
                             </tr>
                         @endforeach
                     </tbody>

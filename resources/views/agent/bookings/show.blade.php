@@ -49,7 +49,7 @@
                                 <strong>Status:</strong><br>
                                 @php
                                     $statusClass = match($booking->status) {
-                                        'confirmed', 'ticketed' => 'success',
+                                        'confirmed', 'ticketed' => 'badge-ticketed',
                                         'pending', 'assigned_to_charging' => 'warning',
                                         default => 'danger'
                                     };
@@ -304,6 +304,7 @@
                                                     $statusClass = match($card->payment_status) {
                                                         'success' => 'success',
                                                         'pending' => 'warning',
+                                                        'ticketed' => 'badge-ticketed',
                                                         default => 'danger'
                                                     };
                                                 @endphp

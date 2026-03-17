@@ -98,9 +98,8 @@
                                 <i class="fas fa-bolt"></i> Charge
                             </a>
                             @else
-                            <span class="badge badge-secondary">Already Assigned</span>
+                            <span class="badge badge-secondary"> Assigned</span>
                             @endif
-
                         </td>
                     </tr>
                     @empty

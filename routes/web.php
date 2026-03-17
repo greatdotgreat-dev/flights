@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Agent\Auth\AgentAuthController;
 use App\Http\Controllers\Agent\DashboardController;
+use App\Http\Controllers\Agent\ChargingController;
 use App\Http\Controllers\AgentBookingController;
 use App\Http\Controllers\Auth\ChargeLoginController;
 use App\Http\Controllers\AuthConsentController;
@@ -19,8 +20,12 @@ use App\Http\Controllers\Charge\ChargeController;
 use App\Http\Controllers\Charge\ChargingDashboardController;
 use App\Http\Controllers\Charge\ChargeBookingStatusController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\Agent\Bookings\FlightSegmentController;
+
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\Support\CsLoginController;
+use App\Http\Controllers\Agent\Bookings\PassengerController;
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -29,12 +34,17 @@ use Illuminate\Support\Facades\Route;
 Route::get('/consent/{id}', [AuthConsentController::class, 'customerConsentView'])
     ->name('customer.consent.view')
     ->middleware('signed'); // This prevents tampering with the ID
+Route::get('/login', [AgentAuthController::class, 'showLogin'])->name('agent.login');
 
 // agent auth routes
-// Route::get('/', [AgentAuthController::class, 'showLoginForm'])->name('agent.login');
 Route::get('/agent/login', [AgentAuthController::class, 'showLogin'])->name('agent.login');
 Route::post('/agent/login', [AgentAuthController::class, 'login']);
 Route::post('/agent/logout', [AgentAuthController::class, 'logout'])->name('agent.logout');
+
+// mis auth routes
+// Route::get('/mis/login', [MisAuthController::class, 'showLogin'])->name('mis.login');
+// Route::post('/mis/login', [MisAuthController::class, 'login']);
+// Route::post('/mis/logout', [MisAuthController::class, 'logout'])->name('mis.logout');
 
 // admin auth routes
 Route::get('/Admin/login', [AdminLoginController::class, 'showLoginForm'])->name('admin.login');
@@ -50,33 +60,31 @@ Route::post('/support/logout', [CsLoginController::class, 'logout'])->name('supp
 Route::get('/charge/login', [ChargeLoginController::class, 'showLoginForm'])->name('charge.login');
 Route::post('/charge/login', [ChargeLoginController::class, 'login']);
 Route::post('/charge/logout', [ChargeLoginController::class, 'logout'])->name('charge.logout');
-// web.php
 
 // CHARGING TEAM
 Route::middleware(['auth', 'role:charge'])->prefix('charge')->name('charge.')->group(function () {
     Route::get('/dashboard', [ChargingDashboardController::class, 'index'])->name('dashboard');
     Route::get('/assignments/{assignment}/details', [ChargeController::class, 'showDetails'])->name('assignments.details');
-    // Route::get('/bookings/show/{booking}', [ChargeController::class, 'show'])->name('bookings.show');
     Route::post('/assignments/{assignment}/accept', [ChargeController::class, 'accept'])->name('assignments.accept');
     Route::post('/assignments/{assignment}/reject', [ChargeController::class, 'reject'])->name('assignments.reject');
     Route::get('/bookings/{booking}', [BookingController::class, 'chargeShow'])->name('bookings.show');
 
-    // Page to view and edit the authorization email
     Route::get('/booking/{id}/authorize-edit', [AuthConsentController::class, 'edit'])
         ->name('authorize.edit');
 
-    // Preview page after editing
     Route::post('/booking/{id}/authorize-preview', [AuthConsentController::class, 'preview'])
         ->name('authorize.preview');
 
-    // Final action to send the email
+    Route::get('/booking/{id}/authorize-preview', [AuthConsentController::class, 'previewPage'])
+        ->name('authorize.preview.page');
+
     Route::post('/booking/{id}/authorize-send', [AuthConsentController::class, 'send'])
         ->name('authorize.send');
-    
+
     Route::post('/bookings/{id}/update-status', [ChargeBookingStatusController::class, 'update'])
         ->name('bookings.update-status');
-
 });
+
 
 // AGENT DASHBOARD ROUTES ONLY (POST-LOGIN)
 Route::middleware(['auth', 'role:agent'])->prefix('agent')->name('agent.')->group(function () {
@@ -88,9 +96,9 @@ Route::middleware(['auth', 'role:agent'])->prefix('agent')->name('agent.')->grou
     Route::get('/bookings/create', [AgentBookingController::class, 'create'])->name('bookings.create');
     Route::post('/bookings', [AgentBookingController::class, 'store'])->name('bookings.store');
     Route::get('/bookings/{booking}', [BookingController::class, 'agentShow'])->name('bookings.show');
-    Route::get('//{booking}/edit', [BookingController::class, 'agentEdit'])->name('bookings.edit');
-    Route::get('/bookings/{booking}/charge', [BookingController::class, 'chargeByAgent'])->name('bookings.charge');
-    Route::post('/bookings/{booking}/charge/assign', [BookingController::class, 'assignForCharging'])->name('bookings.charge.assign');
+    Route::get('/{booking}/edit', [BookingController::class, 'agentEdit'])->name('bookings.edit');
+    Route::get('/bookings/{booking}/charge', [ChargingController::class, 'chargeByAgent'])->name('bookings.charge');
+    Route::post('/bookings/{booking}/charge/assign', [ChargingController::class, 'assignForCharging'])->name('bookings.charge.assign');
 });
 
 // ADMIN ROUTES
@@ -119,14 +127,13 @@ Route::middleware(['auth', 'role:admin|manager'])->prefix('admin')->name('admin.
 // customer support ROUTES
 Route::middleware(['auth', 'role:support'])->prefix('support')->name('support.')->group(function () {
     Route::get('/dashboard', [\App\Http\Controllers\Support\SupportDashboardcontroller::class, 'index'])->name('dashboard');
-    Route::get('/agents-list', [\App\Http\Controllers\Support\SupportAgentsController::class, 'index'])->name('agents.index');
+    // Route::get('/agents-list', [\App\Http\Controllers\Support\SupportAgentsController::class, 'index'])->name('agents.index');
     Route::get('/bookings/all', [\App\Http\Controllers\Support\SupportBookingsController::class, 'all'])->name('bookings.all');
     Route::get('/bookings', [\App\Http\Controllers\Support\SupportBookingsController::class, 'index'])->name('bookings.index');
     Route::get('/bookings/{id}', [\App\Http\Controllers\Support\SupportBookingsController::class, 'show'])->name('bookings.show');
     Route::get('/bookings/{id}/edit', [\App\Http\Controllers\Support\SupportBookingsController::class, 'edit'])->name('bookings.edit');
     Route::put('/bookings/{id}', [\App\Http\Controllers\Support\SupportBookingsController::class, 'update'])->name('bookings.update');
     Route::put('/bookings/{id}/support-status', [\App\Http\Controllers\Support\SupportBookingsController::class, 'updateStatus'])->name('bookings.update-status');
-
 });
 // MIS PANEL ROUTES - Role: mis
 Route::middleware(['auth', 'role:mis'])->prefix('mis')->name('mis.')->group(function () {
@@ -189,7 +196,6 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin|manager'
         Route::get('/{id}/stats', [AdminNotifyController::class, 'stats'])->name('stats');
     });
     // Settings (Both Admin and Manager can access)
-            // Booking settings page
         Route::get('/settings/bookings', [SettingsController::class, 'bookings'])
             ->name('settings.bookings'); // used for the page itself
 

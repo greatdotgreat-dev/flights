@@ -23,11 +23,24 @@
 
                 <div class="row mb-3">
                     <div class="col-md-6">
-                        <label class="form-label">Status</label>
+                        <label class="form-label">Change Status</label>
                         <select name="status" class="form-select" required>
                             <option value="pending" {{ $booking->status == 'pending' ? 'selected' : '' }}>Pending</option>
+                            <option value="assigned_to_charging" {{ $booking->status == 'assigned_to_charging' ? 'selected' : '' }}>Assigned to Charging</option>
+                            <option value="auth_email_sent" {{ $booking->status == 'auth_email_sent' ? 'selected' : '' }}>Auth Email Sent</option>
+                            <option value="payment_processing" {{ $booking->status == 'payment_processing' ? 'selected' : '' }}>Payment Processing</option>
+                            <option value="confirmed" {{ $booking->status == 'confirmed' ? 'selected' : '' }}>Confirmed</option>
+                            <option value="ticketed" {{ $booking->status == 'ticketed' ? 'selected' : '' }}>Ticketed</option>
+                            <option value="failed" {{ $booking->status == 'failed' ? 'selected' : '' }}>Failed</option>
+                            <option value="cancelled" {{ $booking->status == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
+                            <option value="hold" {{ $booking->status == 'hold' ? 'selected' : '' }}>Hold</option>
+                            <option value="refund" {{ $booking->status == 'refund' ? 'selected' : '' }}>Refund</option>
+                            <option value="charging_in_progress" {{ $booking->status == 'charging_in_progress' ? 'selected' : '' }}>Charging In Progress</option>
+                            <option value="Alert" {{ $booking->status == 'Alert' ? 'selected' : '' }}>Alert</option>
+                            <option value="RDR" {{ $booking->status == 'RDR' ? 'selected' : '' }}>RDR</option>
+                            <option value="retrieval" {{ $booking->status == 'retrieval' ? 'selected' : '' }}>Retrieval</option>
+                            <option value="chargeback" {{ $booking->status == 'chargeback' ? 'selected' : '' }}>Chargeback</option>
                             <option value="charged" {{ $booking->status == 'charged' ? 'selected' : '' }}>Charged</option>
-                            <option value="refunded" {{ $booking->status == 'refunded' ? 'selected' : '' }}>Refunded</option>
                         </select>
                     </div>
                 </div>

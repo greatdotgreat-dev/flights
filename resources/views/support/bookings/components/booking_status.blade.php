@@ -3,7 +3,7 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header bg-warning">
-                <h5 class="modal-title" id="statusModalLabel{{ $booking->id }}">Change Booking Status (#{{ $booking->id }})</h5>
+                <h5 class="modal-title" id="statusModalLabel{{ $booking->id }}">Change Booking Status (id{{ $booking->id }})</h5>
                 <button type="button" class="btn-close btn fw-bold" data-bs-dismiss="modal" aria-label="Close">X</button>
             </div>
             <form action="{{ route('support.bookings.update-status', $booking->id) }}" method="POST">
@@ -31,3 +31,5 @@
         </div>
     </div>
 </div>
+
+

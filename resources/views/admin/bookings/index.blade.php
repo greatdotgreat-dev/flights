@@ -62,7 +62,7 @@
                                     @if($booking->segments->count() > 0)
                                         @foreach($booking->segments as $segment)
                                             <div class="text-nowrap">
-                                                {{ $segment->from_airport }} → {{ $segment->to_airport }}
+                                                {{ $segment->departure_city }} → {{ $segment->arrival_airport }}
                                                 <small class="text-muted">({{ $segment->departure_date->format('d M') }})</small>
                                             </div>
                                         @endforeach

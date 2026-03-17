@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Agent Panel | Flight Booking CRM</title>
+    <title>Agent Panel | Travelomile Flights Unlocked</title>
 
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
@@ -12,7 +12,8 @@
     <!-- Google Font: Source Sans Pro -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
     <link rel="stylesheet" href="{{ asset('css/panel.css') }}">
-
+    <link rel="shortcut icon" type="image/x-icon" href="{{asset('img/favicon.png')}}">
+    
     @stack('styles')
 </head>
 <body class="hold-transition sidebar-mini layout-fixed">
@@ -183,7 +184,7 @@
 
     <!-- Footer -->
     <footer class="main-footer">
-        <strong>Copyright &copy; {{ date('Y') }} <a href="#">Flight Booking CRM</a>.</strong>
+        <strong>Copyright &copy; {{ date('Y') }} <a href="#">Travelomile - Flights Unlocked</a>.</strong>
         All rights reserved.
         <div class="float-right d-none d-sm-inline-block">
             <b>Version</b> 1.0.0
