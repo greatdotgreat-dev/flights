@@ -13,9 +13,9 @@
             <p class="text-muted small">Manage all bookings from all agents</p>
         </div>
         <div class="col-auto">
-            <a href="{{ route('support.agents.index') }}" class="btn btn-outline-primary">
+            {{-- <a href="{{ route('support.agents.index') }}" class="btn btn-outline-primary">
                 <i class="bi bi-people"></i> View Agents
-            </a>
+            </a> --}}
         </div>
     </div>
 
